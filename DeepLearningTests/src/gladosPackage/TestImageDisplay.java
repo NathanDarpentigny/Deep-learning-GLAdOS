@@ -31,8 +31,8 @@ public class TestImageDisplay extends JPanel {
 
 	public TestImageDisplay() {
 		super();
-		Path trainImages = FileSystems.getDefault().getPath("C:/Users/Laty/workspace/DeepLearningTests/bin/newTest/TrainImages", "TrainImages.idx3-ubyte");
-		Path trainLabels = FileSystems.getDefault().getPath("C:/Users/Laty/workspace/DeepLearningTests/bin/newTest/TrainLabels", "TrainLabels.idx1-ubyte");
+		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
+		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
 		byte[] imagesArray;
 		byte[] labelsArray;
 		try {

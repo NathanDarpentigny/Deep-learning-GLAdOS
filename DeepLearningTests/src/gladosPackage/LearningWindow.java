@@ -15,8 +15,8 @@ public class LearningWindow extends JFrame{
 
 	public static void main(String[] args) {
 		//LearningWindow frame = new LearningWindow();
-		Path trainImages = FileSystems.getDefault().getPath("C:/Users/Laty/workspace/DeepLearningTests/bin/newTest/TrainImages", "TrainImages.idx3-ubyte");
-		Path trainLabels = FileSystems.getDefault().getPath("C:/Users/Laty/workspace/DeepLearningTests/bin/newTest/TrainLabels", "TrainLabels.idx1-ubyte");
+		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
+		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
 		byte[] imagesArray = null;
 		byte[] labelsArray = null;
 		try {
@@ -35,8 +35,8 @@ public class LearningWindow extends JFrame{
 		NeuralNetwork learningNN = new NeuralNetwork(new int[] {2,2,1},0.2);
 		double errorPerEpoch = 0.;
 		double[] expectedOutput;
-		for(int i = 0 ; i<1000; i++){
-			for(int j = 0 ; j<10 ; j++){
+		for(int i = 0 ; i<60000/30; i++){
+			for(int j = 0 ; j<30 ; j++){
 				double inputA = Math.floor(Math.random()*2);
 				double inputB = Math.floor(Math.random()*2);
 				learningNN.setInputs(new double [] {inputA,inputB});
