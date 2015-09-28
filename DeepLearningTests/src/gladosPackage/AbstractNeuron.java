@@ -1,4 +1,4 @@
-package newTest;
+package gladosPackage;
 
 public abstract class AbstractNeuron {
 	/**

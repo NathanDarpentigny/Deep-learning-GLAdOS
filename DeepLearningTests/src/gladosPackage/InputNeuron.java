@@ -1,4 +1,4 @@
-package newTest;
+package gladosPackage;
 
 import java.util.List;
 

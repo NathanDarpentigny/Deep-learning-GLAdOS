@@ -1,4 +1,4 @@
-package newTest;
+package gladosPackage;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -32,10 +32,10 @@ public class LearningWindow extends JFrame{
 		}
 		
 		//NeuralNetwork learningNN = new NeuralNetwork(new int[] {784,392,196,98,10},0.5);
-		NeuralNetwork learningNN = new NeuralNetwork(new int[] {2,2,1},0.7);
+		NeuralNetwork learningNN = new NeuralNetwork(new int[] {2,2,1},0.2);
 		double errorPerEpoch = 0.;
 		double[] expectedOutput;
-		for(int i = 0 ; i<100; i++){
+		for(int i = 0 ; i<1000; i++){
 			for(int j = 0 ; j<10 ; j++){
 				double inputA = Math.floor(Math.random()*2);
 				double inputB = Math.floor(Math.random()*2);

@@ -1,4 +1,4 @@
-package newTest;
+package gladosPackage;
 
 import java.awt.Color;
 import java.awt.Graphics;
