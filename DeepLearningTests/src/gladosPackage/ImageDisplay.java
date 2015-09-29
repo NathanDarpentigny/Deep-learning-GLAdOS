@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class TestImageDisplay extends JPanel {
+public class ImageDisplay extends JPanel {
 	
 	private int[][] imageMatrix = new int[28][28];
 	
@@ -25,11 +25,11 @@ public class TestImageDisplay extends JPanel {
 		mainwindow.setSize(300,200);
 		mainwindow.setLocationRelativeTo(null);
 		mainwindow.setTitle("Image Preview");
-		mainwindow.setContentPane(new TestImageDisplay());
+		mainwindow.setContentPane(new ImageDisplay(42));
 		mainwindow.setVisible(true);
 	}
 
-	public TestImageDisplay() {
+	public ImageDisplay(int imageNumber) {
 		super();
 		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
 		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
@@ -38,7 +38,7 @@ public class TestImageDisplay extends JPanel {
 		try {
 			imagesArray = Files.readAllBytes(trainImages);
 			labelsArray = Files.readAllBytes(trainLabels);
-			int c = 42;
+			int c = imageNumber;
 			int start = 16+c*(28*28);
 			for(int i = start ; i<(28*28)+start ; i++){
 				//System.out.println(imagesArray[i]);
@@ -50,6 +50,25 @@ public class TestImageDisplay extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+	}
+	public ImageDisplay(byte[] show, double[] expectedOutput) {
+		super();
+			
+			
+		
+			for(int i = 0 ; i<(28*28) ; i++){
+				//System.out.println(imagesArray[i]);
+				imageMatrix [i%28][i/28] = (int)show[i];
+			}
+			for(int i = 0 ; i<9 ; i++){
+				if (expectedOutput[i] == 1.){
+					System.out.println(i);
+				}
+			}
+			
+		
+		
 
 	}
 

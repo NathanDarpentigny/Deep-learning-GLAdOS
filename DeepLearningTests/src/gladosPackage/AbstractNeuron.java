@@ -1,6 +1,8 @@
 package gladosPackage;
 
 public abstract class AbstractNeuron {
+	
+	public static final double WEIGHT_RANGE = 2.4;
 	/**
 	 * This function should return the current stored output for this neuron.
 	 * 
@@ -32,6 +34,12 @@ public abstract class AbstractNeuron {
 	 */
 	abstract public void resetWeightDiffs();
 
+	
+	/**
+	 * "Resets" the weight gradient for all weights in the neuron according to the momentum method.
+	 */
+	abstract public void resetWeightDiffsMomentum(double alphaRate);
+	
 	/**
 	 * Increments the weight gradient for all the weights in the neuron
 	 */
@@ -61,11 +69,20 @@ public abstract class AbstractNeuron {
 	 * @return
 	 */
 	public static double activationFun(double x) {
-		return 1. / (1 + Math.exp(-x));
+		if(x<-45.){
+			return 0;
+		}
+		else if(x>45.){
+			return 1;
+		}
+		else{
+			return 1. / (1 + Math.exp(-x));
+		}
 	}
 
+	abstract public void varyLR();
 	
-		
+	abstract public void resetLR();
 		
 	
 

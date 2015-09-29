@@ -1,9 +1,14 @@
 package gladosPackage;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NeuralNetwork {
+public class NeuralNetwork implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private List<AbstractNeuron> inputLayer;
 	private List<List<AbstractNeuron>> intermediateLayers;
 	private List<AbstractNeuron> outputLayer;
@@ -238,5 +243,53 @@ public class NeuralNetwork {
 	 */
 	public void setLearningRate(double newLearningRate) {
 		learningRate = newLearningRate;
+	}
+
+	public void resetWeightDiffsMomentum(double alphaRate){
+		for (AbstractNeuron n : outputLayer) {
+			n.resetWeightDiffsMomentum(alphaRate);
+		}
+
+		for (List<AbstractNeuron> layer : intermediateLayers) {
+			for (AbstractNeuron n : layer) {
+				n.resetWeightDiffsMomentum(alphaRate);
+			}
+		}
+
+		for (AbstractNeuron n : inputLayer) {
+			n.resetWeightDiffsMomentum(alphaRate);
+		}
+	}
+
+	public void varyLR(){
+		for (AbstractNeuron n : outputLayer) {
+			n.varyLR();
+		}
+
+		for (List<AbstractNeuron> layer : intermediateLayers) {
+			for (AbstractNeuron n : layer) {
+				n.varyLR();
+			}
+		}
+
+		for (AbstractNeuron n : inputLayer) {
+			n.varyLR();
+		}
+	}
+	
+	public void resetLR(){
+		for (AbstractNeuron n : outputLayer) {
+			n.resetLR();
+		}
+
+		for (List<AbstractNeuron> layer : intermediateLayers) {
+			for (AbstractNeuron n : layer) {
+				n.resetLR();
+			}
+		}
+
+		for (AbstractNeuron n : inputLayer) {
+			n.resetLR();
+		}
 	}
 }
