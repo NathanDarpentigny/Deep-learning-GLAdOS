@@ -6,15 +6,12 @@ public class InputNeuron extends AbstractNeuron {
 
 	private double input = 0;
 	private double neuronDiff = 0;
-	private List<AbstractNeuron> outputNeurons;
 	private double output;
-	
 
 	public InputNeuron() {
 	}
 
 	public void setOutputNeurons(List<AbstractNeuron> outNeurons) {
-		outputNeurons = outNeurons;
 	}
 
 	public double getOutput() {
@@ -54,15 +51,11 @@ public class InputNeuron extends AbstractNeuron {
 	public void resetWeightDiffsMomentum(double alphaRate) {
 	}
 
-	
 	public void varyLR() {
-	
-		
+
 	}
 
-	
 	public void resetLR() {
-		
-		
+
 	}
 }

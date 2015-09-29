@@ -94,10 +94,10 @@ public class OutputNeuron extends AbstractNeuron {
 	public void varyLR() {
 		for(int c = 0 ;  c< weights.length ; c++){
 			if(gradientChangedSign[c]){
-				varLR[c] = LearningWindow.INCREASE_LR*varLR[c];
+				varLR[c] = LearningWindow.DECREASE_LR*varLR[c];
 			}
 			else{
-				varLR[c] = LearningWindow.DECREASE_LR*varLR[c];
+				varLR[c] = LearningWindow.INCREASE_LR*varLR[c];
 			}
 		}	
 	}

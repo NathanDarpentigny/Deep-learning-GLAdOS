@@ -20,6 +20,7 @@ public class SourceImage implements Serializable{
 	private double[][] matrixTransformed;
 	private double[] relevantFeatures;
 	private int imageSize;
+	private byte label;
 
 	/**
 	 * Creates the source image from <code>rawImage</code> but does not extract
@@ -28,7 +29,8 @@ public class SourceImage implements Serializable{
 	 * @param rawImage
 	 * @param imageSize
 	 */
-	public SourceImage(byte[] rawImage, int imageSize) {
+	public SourceImage(byte[] rawImage, int imageSize, byte label) {
+		this.label = label;
 		if (rawImage.length != imageSize * imageSize) {
 			System.out.println("Wrong imageSize");
 		}
@@ -36,6 +38,15 @@ public class SourceImage implements Serializable{
 		correctRawImage();
 		this.imageSize = imageSize;
 		buildMatrix();
+	}
+
+	public SourceImage(double[] relevantFeatures , double[] expectedOutput){
+		this.relevantFeatures = relevantFeatures;
+		for(int i = 0 ; i<expectedOutput.length ; i++){
+			if (expectedOutput[i] !=0){
+				label = (byte) i;
+			}
+		}
 	}
 
 	private void correctRawImage() {
@@ -169,5 +180,25 @@ public class SourceImage implements Serializable{
 		return relevantFeatures;
 	}
 
+	/**
+	 * Returns the corresponding correct label for this image.
+	 * @return
+	 */
+	public byte getLabel(){
+		return label;
+	}
 	
+	public double[] getExpectedOutput(){
+		double[] res;
+		if(LearningWindow.STANDARD_OUTPUT){
+			res = new double[10];
+			res[label] =1.;
+		}
+		else{
+			res = new double[]{0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1};
+			res[label] =0.9;
+		}
+		
+		return res;
+	}
 }
