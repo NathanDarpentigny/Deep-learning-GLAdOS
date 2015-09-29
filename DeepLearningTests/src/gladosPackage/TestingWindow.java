@@ -12,8 +12,14 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import javax.swing.JSpinner;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -38,25 +44,28 @@ public class TestingWindow extends JFrame{
 	private JTextField showOutput;
 	
 	public static void main(String[] args){
-		TestingWindow mainWindow = new TestingWindow();
-		NeuralNetwork testedNN = null;
-		try{
-			FileInputStream fileIn= new FileInputStream("src/resultingNN/latest.ser");
-			ObjectInputStream in = new ObjectInputStream(fileIn);
-			
-			try {
-				testedNN = (NeuralNetwork) in.readObject();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			in.close();
-			fileIn.close();
-		}catch (IOException e) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		mainWindow.setNN(testedNN);		
+		@SuppressWarnings("unused")
+		TestingWindow mainWindow = new TestingWindow();
+		
+		
 	}
 	
+	@SuppressWarnings("unused")
 	private void setNN(NeuralNetwork testedNN) {
 		this.testedNN = testedNN;
 		
@@ -140,6 +149,44 @@ public class TestingWindow extends JFrame{
 		setVisible(true);
 		pack();
 		revalidate();
+		
+		JFileChooser chooser = new JFileChooser(".");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("NeuralNetworks","ser");
+		chooser.setFileFilter(filter);
+		int returnVal = chooser.showOpenDialog(this);
+
+		try {
+			// System.out.println(chooser.getSelectedFile().getPath());
+
+			if (returnVal ==JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+				
+				try{
+					FileInputStream fileIn= new FileInputStream(chooser.getSelectedFile());
+					ObjectInputStream in = new ObjectInputStream(fileIn);
+					
+					try {
+						testedNN = (NeuralNetwork) in.readObject();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+					in.close();
+					fileIn.close();
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			}
+			else{
+				this.dispose();
+			}
+		} catch (Exception e1) {
+
+			e1.printStackTrace();
+		}
+		
+		
+		
+		
 		
 	}
 	
