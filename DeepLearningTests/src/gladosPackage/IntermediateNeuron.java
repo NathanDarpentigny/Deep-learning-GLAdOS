@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IntermediateNeuron extends AbstractNeuron {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7121607590851459193L;
 	private double[] weights;
 	private double[] weightDiffs;
 	private double neuronDiff;

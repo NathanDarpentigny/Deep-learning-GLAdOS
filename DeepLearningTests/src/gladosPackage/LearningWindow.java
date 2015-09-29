@@ -105,7 +105,7 @@ public class LearningWindow extends JFrame{
 					errorPerEpoch += currentError(expectedOutput,learningNN.getOutputs());
 				}
 				if(SHOW_IMAGE&&!PREPROCESSING){
-					mainwindow.setContentPane(new ImageDisplay(show,expectedOutput));
+					mainwindow.setContentPane(new ImageDisplayPanel(show,expectedOutput));
 					mainwindow.repaint();
 
 					mainwindow.revalidate();

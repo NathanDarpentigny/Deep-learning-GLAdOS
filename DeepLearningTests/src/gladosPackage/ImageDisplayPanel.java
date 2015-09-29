@@ -8,10 +8,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class ImageDisplay extends JPanel {
+public class ImageDisplayPanel extends JPanel {
 	
 	private int[][] imageMatrix = new int[28][28];
 	
@@ -20,27 +19,15 @@ public class ImageDisplay extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		JFrame mainwindow = new JFrame();
-		mainwindow.setSize(300,200);
-		
-		mainwindow.setLocationRelativeTo(null);
-		mainwindow.setTitle("Image Preview");
-		mainwindow.setContentPane(new ImageDisplay(42));
-		mainwindow.setVisible(true);
-	}
 
-	public ImageDisplay(int imageNumber) {
+	public ImageDisplayPanel(int imageNumber) {
 		super();
-		this.setPreferredSize(new Dimension(300,300));
+		this.setPreferredSize(new Dimension(250,250));
 		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
-		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
 		byte[] imagesArray;
-		byte[] labelsArray;
 		try {
 			imagesArray = Files.readAllBytes(trainImages);
-			labelsArray = Files.readAllBytes(trainLabels);
+
 			int c = imageNumber;
 			int start = 16+c*(28*28);
 			for(int i = start ; i<(28*28)+start ; i++){
@@ -55,7 +42,7 @@ public class ImageDisplay extends JPanel {
 		}
 
 	}
-	public ImageDisplay(byte[] show, double[] expectedOutput) {
+	public ImageDisplayPanel(byte[] show, double[] expectedOutput) {
 		super();
 			
 			
@@ -78,6 +65,7 @@ public class ImageDisplay extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		int value;
+		int bias = 50;
 		for(int i = 0 ; i< imageMatrix.length; i++){
 			for(int j = 0 ; j<imageMatrix[i].length ; j++){
 				if(imageMatrix[i][j] != 0){
@@ -88,7 +76,7 @@ public class ImageDisplay extends JPanel {
 				}
 				
 				g.setColor(new Color(value,value,value));
-				g.fillRect(5*i, 5*j, 5, 5);
+				g.fillRect(bias+5*i, bias+5*j, 5, 5);
 			}
 		}
 	}

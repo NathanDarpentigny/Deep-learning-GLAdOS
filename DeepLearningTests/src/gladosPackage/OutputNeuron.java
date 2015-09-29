@@ -4,6 +4,10 @@ import java.util.List;
 
 
 public class OutputNeuron extends AbstractNeuron {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1783963236181264684L;
 	private double[] weights;
 	private double[] weightDiffs;
 	private double neuronDiff = 0;

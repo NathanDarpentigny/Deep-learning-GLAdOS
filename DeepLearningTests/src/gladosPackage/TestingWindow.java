@@ -1,16 +1,12 @@
 package gladosPackage;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Scanner;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -21,6 +17,12 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+ * This class is a window which allows the test of neural networks
+ * when recognizing written characters.
+ * @author Laty
+ *
+ */
 public class TestingWindow extends JFrame{
 	NeuralNetwork testedNN;
 	/**
@@ -52,50 +54,7 @@ public class TestingWindow extends JFrame{
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
-		mainWindow.setNN(testedNN);
-		
-		
-//		Scanner user_input;
-//		while(true){
-////			user_input = new Scanner(System.in);
-//			int n = 0;
-//			System.out.print("Select an image number  ");
-////			String nString = user_input.next();
-////			n = Integer.parseInt(nString);
-//			mainWindow.setNumberShowingPanel(new ImageDisplay(n));
-//			mainWindow.pack();
-//			mainWindow.revalidate();
-////			user_input.close();
-//			Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
-//			Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
-//			byte[] rawImagesArray = null;
-//			byte[] labelsArray = null;
-//			try {
-//				rawImagesArray = Files.readAllBytes(trainImages);
-//				labelsArray = Files.readAllBytes(trainLabels);
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			List<SourceImage> cleanInput = LearningWindow.createCleanInput(rawImagesArray,labelsArray);
-//			SourceImage currentImage = cleanInput.get(n);
-//			currentImage.buildRelevantFeatures(testedNN.getInputLayer().size());
-//			testedNN.setInputs(currentImage.getRelevantFeatures());
-//			testedNN.fire();
-//			double max = 0;
-//			int c = -1;
-//			for(int i = 0 ; i< testedNN.getOutputs().size(); i++){
-//				if(testedNN.getOutputs().get(i)>max){
-//					max =testedNN.getOutputs().get(i);
-//					c = i;
-//				}
-//			}
-//			System.out.println(c);
-//			
-//		}
-		
-		
-		
+		mainWindow.setNN(testedNN);		
 	}
 	
 	private void setNN(NeuralNetwork testedNN) {
@@ -144,7 +103,7 @@ public class TestingWindow extends JFrame{
 		btnOK = new JButton("OK");
 		btnOK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TestingWindow.this.setNumberShowingPanel(new ImageDisplay((int)spinner.getValue()));
+				TestingWindow.this.setNumberShowingPanel(new ImageDisplayPanel((int)spinner.getValue()));
 				TestingWindow.this.pack();
 				TestingWindow.this.revalidate();
 				Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
@@ -177,7 +136,7 @@ public class TestingWindow extends JFrame{
 		sidePanel.add(btnOK, BorderLayout.EAST);
 		
 		
-		
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setVisible(true);
 		pack();
 		revalidate();
