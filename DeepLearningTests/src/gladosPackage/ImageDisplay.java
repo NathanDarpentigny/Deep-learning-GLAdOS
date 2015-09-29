@@ -1,6 +1,7 @@
 package gladosPackage;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -23,6 +24,7 @@ public class ImageDisplay extends JPanel {
 		// TODO Auto-generated method stub
 		JFrame mainwindow = new JFrame();
 		mainwindow.setSize(300,200);
+		
 		mainwindow.setLocationRelativeTo(null);
 		mainwindow.setTitle("Image Preview");
 		mainwindow.setContentPane(new ImageDisplay(42));
@@ -31,6 +33,7 @@ public class ImageDisplay extends JPanel {
 
 	public ImageDisplay(int imageNumber) {
 		super();
+		this.setPreferredSize(new Dimension(300,300));
 		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
 		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
 		byte[] imagesArray;
@@ -44,7 +47,7 @@ public class ImageDisplay extends JPanel {
 				//System.out.println(imagesArray[i]);
 				imageMatrix [(i-start)%28][(i-start)/28] = (int)imagesArray[i];
 			}
-			System.out.println(labelsArray[8+c]);
+			//System.out.println(labelsArray[8+c]);
 		
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

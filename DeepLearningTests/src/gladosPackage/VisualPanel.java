@@ -1,6 +1,7 @@
 package gladosPackage;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
@@ -17,6 +18,7 @@ public class VisualPanel extends JPanel{
 	public VisualPanel(double xres, double yres, double wres){
 		
 		super();
+		
 		this.xres = xres;
 		this.yres = yres;
 		this.wres = wres;
