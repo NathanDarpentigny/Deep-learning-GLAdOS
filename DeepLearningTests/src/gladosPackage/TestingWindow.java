@@ -31,6 +31,7 @@ import java.awt.event.ActionEvent;
  */
 public class TestingWindow extends JFrame{
 	NeuralNetwork testedNN;
+	boolean nnIsPreprocessed;
 	/**
 	 * 
 	 */
@@ -128,8 +129,14 @@ public class TestingWindow extends JFrame{
 				}
 				List<SourceImage> cleanInput = LearningWindow.createCleanInput(rawImagesArray,labelsArray);
 				SourceImage currentImage = cleanInput.get((int)spinner.getValue());
-				currentImage.buildRelevantFeatures(testedNN.getInputLayer().size());
-				testedNN.setInputs(currentImage.getRelevantFeatures());
+				if(nnIsPreprocessed){
+					currentImage.buildRelevantFeatures(testedNN.getInputLayer().size());
+					testedNN.setInputs(currentImage.getRelevantFeatures());
+				}
+				else{
+					testedNN.setInputs(currentImage.getCleanRawDoubleImage());
+				}
+				
 				testedNN.fire();
 				double max = 0;
 				int c = -1;
@@ -151,15 +158,17 @@ public class TestingWindow extends JFrame{
 		revalidate();
 		
 		JFileChooser chooser = new JFileChooser(".");
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("NeuralNetworks","ser");
-		chooser.setFileFilter(filter);
+		FileNameExtensionFilter preFilter = new FileNameExtensionFilter("Preprocessed NeuralNetworks","pre");
+		FileNameExtensionFilter rwFilter = new FileNameExtensionFilter("Raw NeuralNetworks","rw");
+		chooser.setFileFilter(preFilter);
+		chooser.addChoosableFileFilter(rwFilter);
 		int returnVal = chooser.showOpenDialog(this);
 
 		try {
 			// System.out.println(chooser.getSelectedFile().getPath());
 
 			if (returnVal ==JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
-				
+				nnIsPreprocessed = chooser.getSelectedFile().toString().endsWith("pre");
 				try{
 					FileInputStream fileIn= new FileInputStream(chooser.getSelectedFile());
 					ObjectInputStream in = new ObjectInputStream(fileIn);

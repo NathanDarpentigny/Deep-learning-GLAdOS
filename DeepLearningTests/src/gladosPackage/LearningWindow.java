@@ -44,7 +44,7 @@ public class LearningWindow extends JFrame {
 	 * following the method given by the Leon and Sandu article. If false,
 	 * simply creates a NeuralNetwork with as much input neurons as pixels.
 	 */
-	public static final boolean PREPROCESSING = true;
+	public static final boolean PREPROCESSING = false;
 	/**
 	 * If true, will show the output of the last test of an epoch in the
 	 * console.
@@ -53,7 +53,7 @@ public class LearningWindow extends JFrame {
 	/**
 	 * If true, will show the image of the last test of an epoch in a window.
 	 */
-	public static final boolean SHOW_IMAGE = true;
+	public static final boolean SHOW_IMAGE = false;
 	/**
 	 * If false, will replace the standard desired output with intermediate
 	 * values to avoid probabilistic conversions (not very useful).
@@ -72,7 +72,7 @@ public class LearningWindow extends JFrame {
 	/**
 	 * The default learning rate for this learning algorithm.
 	 */
-	public static final double LEARNING_RATE = 0.005;
+	public static final double LEARNING_RATE = 0.05;
 	// private static final double MAX_LR = 2.;
 	/**
 	 * The first parameter in case of variable learning rate.
@@ -188,7 +188,12 @@ public class LearningWindow extends JFrame {
 				errorPerEpoch = 0.;
 			}
 			try {
-				FileOutputStream fileOut = new FileOutputStream("src/resultingNN/latest.ser");
+				FileOutputStream fileOut;
+				if (PREPROCESSING) {
+					fileOut = new FileOutputStream("src/resultingNN/latest.pre");
+				} else {
+					fileOut = new FileOutputStream("src/resultingNN/latest.rw");
+				}
 				ObjectOutputStream out = new ObjectOutputStream(fileOut);
 				out.writeObject(learningNN);
 				out.close();
