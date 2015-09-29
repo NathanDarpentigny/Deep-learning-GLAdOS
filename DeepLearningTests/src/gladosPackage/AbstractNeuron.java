@@ -1,7 +1,13 @@
 package gladosPackage;
 
-public abstract class AbstractNeuron {
+import java.io.Serializable;
+
+public abstract class AbstractNeuron implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8406554630872605961L;
 	public static final double WEIGHT_RANGE = 2.4;
 	/**
 	 * This function should return the current stored output for this neuron.

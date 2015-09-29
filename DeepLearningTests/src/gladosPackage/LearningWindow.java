@@ -1,6 +1,8 @@
 package gladosPackage;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,21 +19,22 @@ public class LearningWindow extends JFrame{
 	private static final boolean SHOW_ERROR_PER_EPOCH = true;
 	private static final boolean PREPROCESSING = true;
 	private static final boolean SHOW_OUTPUT = false;
-	private static final boolean SHOW_IMAGE = false;
+	private static final boolean SHOW_IMAGE = true;
 	public static final boolean STANDARD_OUTPUT = true;
 
 	
 	public static final int INPUT_LENGTH = 100;
-	public static final double LEARNING_RATE =0.01;
+	public static final double LEARNING_RATE =0.005;
 //	private static final double MAX_LR = 2.;
 	public static final double DECREASE_LR = 0.8;
 	public static final double INCREASE_LR = 1.5;
-	private static final double MOMENTUM_RATE = 0.; //0 is equivalent to no momentum.
-	private static final int EPOCH_SIZE = 100;
+	private static final double MOMENTUM_RATE = 0.3; //0 is equivalent to no momentum.
+	private static final int EPOCH_SIZE = 1000;
 	//private VisualPanel contentPane;
 	//private static double[] expectedResult = new double[]{0.8,0.4,0.6};
 
 	
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		//LearningWindow frame = new LearningWindow();
 		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
@@ -64,7 +67,7 @@ public class LearningWindow extends JFrame{
 		
 		if(!SIMPLE){
 			JFrame mainwindow = new JFrame();
-			if(SHOW_IMAGE){
+			if(SHOW_IMAGE && !PREPROCESSING){
 				
 				mainwindow.setSize(300,200);
 				mainwindow.setLocationRelativeTo(null);
@@ -101,9 +104,10 @@ public class LearningWindow extends JFrame{
 					learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
 					errorPerEpoch += currentError(expectedOutput,learningNN.getOutputs());
 				}
-				if(SHOW_IMAGE){
+				if(SHOW_IMAGE&&!PREPROCESSING){
 					mainwindow.setContentPane(new ImageDisplay(show,expectedOutput));
 					mainwindow.repaint();
+
 					mainwindow.revalidate();
 				}
 				if(SHOW_OUTPUT){
@@ -126,6 +130,16 @@ public class LearningWindow extends JFrame{
 				lastEpochError = errorPerEpoch;
 				errorPerEpoch = 0.;
 			}
+			try{
+				FileOutputStream fileOut= new FileOutputStream("src/resultingNN/latest.ser");
+				ObjectOutputStream out = new ObjectOutputStream(fileOut);
+				out.writeObject(learningNN);
+				out.close();
+				fileOut.close();
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
 		
 		else{
@@ -188,7 +202,7 @@ public class LearningWindow extends JFrame{
 
 	public LearningWindow(){
 		
-		//contentPane = new VisualPanel(expectedResult[0]*500,expectedResult[1]*500,expectedResult[2]*50);
+		
 		setTitle("Visualisation");
 		setSize(500,500);
 		setLocationRelativeTo(null);
