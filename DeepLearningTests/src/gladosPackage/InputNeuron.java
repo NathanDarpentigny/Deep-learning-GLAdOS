@@ -2,6 +2,13 @@ package gladosPackage;
 
 import java.util.List;
 
+/**
+ * The simples of all <code>AbstractNeuron</code>s it simply transmits the input
+ * to the output. Most methods are dummies.
+ * 
+ * @author Laty
+ *
+ */
 public class InputNeuron extends AbstractNeuron {
 
 	/**

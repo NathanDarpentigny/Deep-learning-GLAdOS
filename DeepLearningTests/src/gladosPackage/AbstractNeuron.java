@@ -1,9 +1,19 @@
 package gladosPackage;
 
 import java.io.Serializable;
+
+
+
+
+/**
+ * A class that represents a neuron, the fact that it is abstract allows for
+ * more flexibility in any NeuralNetwork.
+ * @author Laty
+ *
+ */
 @SuppressWarnings("unused")
 public abstract class AbstractNeuron implements Serializable {
-	
+
 	private double output;
 	private double input;
 	private double neuronDiff;
@@ -11,7 +21,12 @@ public abstract class AbstractNeuron implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -8406554630872605961L;
+	/**
+	 * A manually adjusted value that allows weights to be initialized randomly
+	 * between <code>WEIGHT_RANGE</code> and <code>-WEIGHT_RANGE</code>
+	 */
 	public static final double WEIGHT_RANGE = 2.4;
+
 	/**
 	 * This function should return the current stored output for this neuron.
 	 * 
@@ -43,12 +58,12 @@ public abstract class AbstractNeuron implements Serializable {
 	 */
 	abstract public void resetWeightDiffs();
 
-	
 	/**
-	 * "Resets" the weight gradient for all weights in the neuron according to the momentum method.
+	 * "Resets" the weight gradient for all weights in the neuron according to
+	 * the momentum method.
 	 */
 	abstract public void resetWeightDiffsMomentum(double alphaRate);
-	
+
 	/**
 	 * Increments the weight gradient for all the weights in the neuron
 	 */
@@ -78,21 +93,24 @@ public abstract class AbstractNeuron implements Serializable {
 	 * @return
 	 */
 	public static double activationFun(double x) {
-		if(x<-45.){
+		if (x < -45.) {
 			return 0;
-		}
-		else if(x>45.){
+		} else if (x > 45.) {
 			return 1;
-		}
-		else{
+		} else {
 			return 1. / (1 + Math.exp(-x));
 		}
 	}
 
+	/**
+	 * Applies the variation of learning rate to every weight of this neuron
+	 * following a specific law.
+	 */
 	abstract public void varyLR();
-	
+
+	/**
+	 * Resets the learning rate of every weight to its default value.
+	 */
 	abstract public void resetLR();
-		
-	
 
 }

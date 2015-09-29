@@ -8,13 +8,13 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
+/**
+ * This class is build entirely to save the preprocessed images as a
+ * <code>List</code> of <code>SourceImage</code>
+ */
 public class Preprocessing {
 	List<SourceImage> info;
-	/**
-	 * This class is build entirely to save the preprocessed images as a
-	 * <code>List</code> of <code>SourceImage</code>
-	 */
+	
 	
 	public Preprocessing() {
 		

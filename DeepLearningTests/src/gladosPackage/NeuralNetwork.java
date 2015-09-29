@@ -4,7 +4,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NeuralNetwork implements Serializable{
+/**
+ * A feed forward neural network which consists of an input layer, an output
+ * layer and at least one hidden layer.
+ * 
+ * @author Laty
+ *
+ */
+public class NeuralNetwork implements Serializable {
 	/**
 	 * 
 	 */
@@ -245,7 +252,13 @@ public class NeuralNetwork implements Serializable{
 		learningRate = newLearningRate;
 	}
 
-	public void resetWeightDiffsMomentum(double alphaRate){
+	/**
+	 * Resets all the weight gradients for all the neurons in the net, according
+	 * to the momentum method and with the alphaRate as parameter.
+	 * 
+	 * @param alphaRate
+	 */
+	public void resetWeightDiffsMomentum(double alphaRate) {
 		for (AbstractNeuron n : outputLayer) {
 			n.resetWeightDiffsMomentum(alphaRate);
 		}
@@ -261,7 +274,11 @@ public class NeuralNetwork implements Serializable{
 		}
 	}
 
-	public void varyLR(){
+	/**
+	 * Changes the learning rate for every neuron in the network when using
+	 * adaptable Learning Rates.
+	 */
+	public void varyLR() {
 		for (AbstractNeuron n : outputLayer) {
 			n.varyLR();
 		}
@@ -276,8 +293,12 @@ public class NeuralNetwork implements Serializable{
 			n.varyLR();
 		}
 	}
-	
-	public void resetLR(){
+
+	/**
+	 * Resets the learning rate to default for all the neurons in the network
+	 * when using adaptable Learning Rate.
+	 */
+	public void resetLR() {
 		for (AbstractNeuron n : outputLayer) {
 			n.resetLR();
 		}

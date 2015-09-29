@@ -173,7 +173,6 @@ public class SourceImage implements Serializable{
 	
 	/**
 	 * Returns the relevant features of the <code>SourceImage</code> 
-	 * @param length
 	 * @return
 	 */
 	public double[] getRelevantFeatures() {

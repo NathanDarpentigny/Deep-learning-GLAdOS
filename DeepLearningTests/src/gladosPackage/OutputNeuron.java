@@ -2,7 +2,13 @@ package gladosPackage;
 
 import java.util.List;
 
-
+/**
+ * An output neuron for a neural network. Uses an inputLayer but no outputLayer,
+ * otherwise works exactly like an <code>IntermediateNeuron</code>.
+ * 
+ * @author Laty
+ *
+ */
 public class OutputNeuron extends AbstractNeuron {
 	/**
 	 * 
@@ -15,20 +21,19 @@ public class OutputNeuron extends AbstractNeuron {
 	private double output;
 	private double[] varLR;
 	private boolean[] gradientChangedSign;
-	
+
 	public OutputNeuron(int size) {
 		weights = new double[size + 1];
 		weightDiffs = new double[size + 1];
-		gradientChangedSign = new boolean[size+1];
-		varLR = new double[size+1];
+		gradientChangedSign = new boolean[size + 1];
+		varLR = new double[size + 1];
 		for (int c = 0; c < size + 1; c++) {
 			weights[c] = (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2)) / size;
 			weightDiffs[c] = 0.;
-			varLR[c]=LearningWindow.LEARNING_RATE;
-			
+			varLR[c] = LearningWindow.LEARNING_RATE;
+
 		}
 	}
-	
 
 	public void setInputNeurons(List<AbstractNeuron> inputN) {
 		inputNeurons = inputN;
@@ -65,11 +70,10 @@ public class OutputNeuron extends AbstractNeuron {
 		for (int c = 0; c < weightDiffs.length - 1; c++) {
 			double temp = weightDiffs[c];
 			weightDiffs[c] += inputNeurons.get(c).getOutput() * neuronDiff;
-			if(temp*weightDiffs[c]>=0){
-				gradientChangedSign[c]=false;
-			}
-			else{
-				gradientChangedSign[c]=true;
+			if (temp * weightDiffs[c] >= 0) {
+				gradientChangedSign[c] = false;
+			} else {
+				gradientChangedSign[c] = true;
 			}
 		}
 		weightDiffs[weightDiffs.length - 1] += neuronDiff;
@@ -96,21 +100,20 @@ public class OutputNeuron extends AbstractNeuron {
 	}
 
 	public void varyLR() {
-		for(int c = 0 ;  c< weights.length ; c++){
-			if(gradientChangedSign[c]){
-				varLR[c] = LearningWindow.INCREASE_LR*varLR[c];
-			}
-			else{
-				varLR[c] = LearningWindow.DECREASE_LR*varLR[c];
+		for (int c = 0; c < weights.length; c++) {
+			if (gradientChangedSign[c]) {
+				varLR[c] = LearningWindow.INCREASE_LR * varLR[c];
+			} else {
+				varLR[c] = LearningWindow.DECREASE_LR * varLR[c];
 			}
 		}
 	}
 
 	public void resetLR() {
-		for(int c = 0 ; c<weights.length ; c++){
+		for (int c = 0; c < weights.length; c++) {
 			varLR[c] = LearningWindow.LEARNING_RATE;
 		}
-		
+
 	}
 
 }
