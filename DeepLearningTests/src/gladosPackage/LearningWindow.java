@@ -34,7 +34,7 @@ public class LearningWindow extends JFrame {
 	 * If true, enables a variable learning rate, following the method given by
 	 * the Popescu article.
 	 */
-	public static final boolean VAR_LEARNING_RATE = true;
+	public static final boolean VAR_LEARNING_RATE = false;
 	/**
 	 * If true, shows the error per epoch of the NeuralNetwork in the console.
 	 */
@@ -44,7 +44,7 @@ public class LearningWindow extends JFrame {
 	 * following the method given by the Leon and Sandu article. If false,
 	 * simply creates a NeuralNetwork with as much input neurons as pixels.
 	 */
-	public static final boolean PREPROCESSING = false;
+	public static final boolean PREPROCESSING = true;
 	/**
 	 * If true, will show the output of the last test of an epoch in the
 	 * console.
@@ -72,7 +72,7 @@ public class LearningWindow extends JFrame {
 	/**
 	 * The default learning rate for this learning algorithm.
 	 */
-	public static final double LEARNING_RATE = 0.05;
+	public static final double LEARNING_RATE = 0.0005;
 	// private static final double MAX_LR = 2.;
 	/**
 	 * The first parameter in case of variable learning rate.
@@ -81,7 +81,7 @@ public class LearningWindow extends JFrame {
 	/**
 	 * The second parameter in case of variable learning rate.
 	 */
-	public static final double INCREASE_LR = 1.5;
+	public static final double INCREASE_LR = 1.2;
 	/**
 	 * The momentum rate of the algorithm which is applied following the method
 	 * described in the Popescu article. Can be set to 0. to disable this
@@ -92,6 +92,8 @@ public class LearningWindow extends JFrame {
 	 * The size of epochs for the current learning algorithm.
 	 */
 	public static final int EPOCH_SIZE = 1000;
+	
+	public static final double  TARGET_ERROR_PER_EPOCH = 35.;
 	// private VisualPanel contentPane;
 	// private static double[] expectedResult = new double[]{0.8,0.4,0.6};
 
@@ -115,7 +117,7 @@ public class LearningWindow extends JFrame {
 			e.printStackTrace();
 		}
 
-		double errorPerEpoch = 0.;
+		double errorPerEpoch = Double.MAX_VALUE;
 		double lastEpochError = 1.;
 		double learningRate = LEARNING_RATE;
 		double[] expectedOutput = null;
@@ -141,51 +143,53 @@ public class LearningWindow extends JFrame {
 				learningNN = new NeuralNetwork(new int[] { 28 * 28, 100, 40, 10 }, learningRate);
 				cleanInput = createCleanInput(rawImagesArray, labelsArray);
 			}
-
-			for (int i = 0; i < cleanInput.size() / EPOCH_SIZE; i++) {
-				for (int j = 0; j < EPOCH_SIZE; j++) {
-					currentImage = cleanInput.get(i * EPOCH_SIZE + j);
-					show = currentImage.getCleanRawImage();
-					if (PREPROCESSING) {
-						input = currentImage.getRelevantFeatures();
-					} else {
-						input = currentImage.getCleanRawDoubleImage();
+			while(errorPerEpoch>TARGET_ERROR_PER_EPOCH){
+				for (int i = 0; i < cleanInput.size() / EPOCH_SIZE; i++) {
+					errorPerEpoch = 0.;
+					for (int j = 0; j < EPOCH_SIZE; j++) {
+						currentImage = cleanInput.get(i * EPOCH_SIZE + j);
+						show = currentImage.getCleanRawImage();
+						if (PREPROCESSING) {
+							input = currentImage.getRelevantFeatures();
+						} else {
+							input = currentImage.getCleanRawDoubleImage();
+						}
+						learningNN.setInputs(input);
+						learningNN.fire();
+						expectedOutput = currentImage.getExpectedOutput();
+						learningNN.calculateNeuronDiffs(expectedOutput);
+						learningNN.incrementWeightDiffs();
+						if (!INCREMENT_PER_EPOCH) {
+							learningNN.incrementWeights();
+							learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
+						}
+						errorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
 					}
-					learningNN.setInputs(input);
-					learningNN.fire();
-					expectedOutput = currentImage.getExpectedOutput();
-					learningNN.calculateNeuronDiffs(expectedOutput);
-					learningNN.incrementWeightDiffs();
-					if (!INCREMENT_PER_EPOCH) {
-						learningNN.incrementWeights();
-						learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
+					if (SHOW_IMAGE && !PREPROCESSING) {
+						mainwindow.setContentPane(new ImageDisplayPanel(show));
+						mainwindow.repaint();
+	
+						mainwindow.revalidate();
 					}
-					errorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
-				}
-				if (SHOW_IMAGE && !PREPROCESSING) {
-					mainwindow.setContentPane(new ImageDisplayPanel(show));
-					mainwindow.repaint();
-
-					mainwindow.revalidate();
-				}
-				if (SHOW_OUTPUT) {
-					System.out.println(learningNN.getOutputs());
-				}
-
-				learningNN.incrementWeights();
-				learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
-				if (SHOW_ERROR_PER_EPOCH) {
-					System.out.println(errorPerEpoch);
-				}
-				if (VAR_LEARNING_RATE) {
-					if (errorPerEpoch > lastEpochError) {
-						learningNN.resetLR();
-					} else {
-						learningNN.varyLR();
+					if (SHOW_OUTPUT) {
+						System.out.println(learningNN.getOutputs());
 					}
+	
+					learningNN.incrementWeights();
+					learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
+					if (SHOW_ERROR_PER_EPOCH) {
+						System.out.println(errorPerEpoch);
+					}
+					if (VAR_LEARNING_RATE) {
+						if (errorPerEpoch > lastEpochError) {
+							learningNN.resetLR();
+						} else {
+							learningNN.varyLR();
+						}
+					}
+					lastEpochError = errorPerEpoch;
+					
 				}
-				lastEpochError = errorPerEpoch;
-				errorPerEpoch = 0.;
 			}
 			try {
 				FileOutputStream fileOut;
