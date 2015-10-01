@@ -62,7 +62,7 @@ public class InputNeuron extends AbstractNeuron {
 	public void resetWeightDiffsMomentum(double alphaRate) {
 	}
 
-	public void varyLR() {
+	public void varyLR(double dummy, double dummy2) {
 
 	}
 

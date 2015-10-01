@@ -106,7 +106,7 @@ public abstract class AbstractNeuron implements Serializable {
 	 * Applies the variation of learning rate to every weight of this neuron
 	 * following a specific law.
 	 */
-	abstract public void varyLR();
+	abstract public void varyLR(double decreaseLR, double increaseLR);
 
 	/**
 	 * Resets the learning rate of every weight to its default value.

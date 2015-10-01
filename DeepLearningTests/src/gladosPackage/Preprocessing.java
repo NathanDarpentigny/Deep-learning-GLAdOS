@@ -21,7 +21,7 @@ public class Preprocessing {
 		
 	}
 	
-	public void preprocessAndSave(Path imagesPath, Path labelsPath){
+	public void preprocessAndSave(Path imagesPath, Path labelsPath, int inputLength){
 		byte[] rawImagesArray = null;
 		byte[] labelsArray = null;
 		try {
@@ -33,7 +33,7 @@ public class Preprocessing {
 		List<SourceImage> savedInfo = LearningWindow.createCleanInput(rawImagesArray, labelsArray);
 		int c = 0;
 		for (SourceImage img : savedInfo) {
-			img.buildRelevantFeatures(LearningWindow.INPUT_LENGTH);
+			img.buildRelevantFeatures(inputLength);
 			c++;
 			System.out.println(c+"/"+60000);
 		}
@@ -62,7 +62,7 @@ public class Preprocessing {
 			System.out.println("SourceImage class not found");
 			e.printStackTrace();
 		}
-		System.out.println("Loaded features");
+		//System.out.println("Loaded features");
 		return res;
 	}
 	
@@ -80,7 +80,7 @@ public class Preprocessing {
 			System.out.println("SourceImage class not found");
 			e.printStackTrace();
 		}
-		System.out.println("Loaded labels");
+		//System.out.println("Loaded labels");
 		return res;
 	}
 	

@@ -45,13 +45,13 @@ public class NeuralNetwork implements Serializable {
 		for (int i = 1; i < structure.length - 1; i++) {
 			intermediateLayers.add(new ArrayList<AbstractNeuron>());
 			for (int j = 0; j < structure[i]; j++) {
-				intermediateLayers.get(i - 1).add(new IntermediateNeuron(structure[i - 1]));
+				intermediateLayers.get(i - 1).add(new IntermediateNeuron(structure[i - 1],learningRate));
 			}
 		}
 
 		outputLayer = new ArrayList<AbstractNeuron>();
 		for (int j = 0; j < structure[structure.length - 1]; j++) {
-			outputLayer.add(new OutputNeuron(structure[structure.length - 2]));
+			outputLayer.add(new OutputNeuron(structure[structure.length - 2],learningRate));
 		}
 		linkNetwork();
 	}
@@ -278,19 +278,19 @@ public class NeuralNetwork implements Serializable {
 	 * Changes the learning rate for every neuron in the network when using
 	 * adaptable Learning Rates.
 	 */
-	public void varyLR() {
+	public void varyLR(double decreaseLR, double increaseLR) {
 		for (AbstractNeuron n : outputLayer) {
-			n.varyLR();
+			n.varyLR( decreaseLR,  increaseLR);
 		}
 
 		for (List<AbstractNeuron> layer : intermediateLayers) {
 			for (AbstractNeuron n : layer) {
-				n.varyLR();
+				n.varyLR(decreaseLR,  increaseLR);
 			}
 		}
 
 		for (AbstractNeuron n : inputLayer) {
-			n.varyLR();
+			n.varyLR(decreaseLR,  increaseLR);
 		}
 	}
 

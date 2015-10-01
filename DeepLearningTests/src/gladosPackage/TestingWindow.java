@@ -150,7 +150,7 @@ public class TestingWindow extends JFrame{
 			}
 		});
 		sidePanel.add(btnOK, BorderLayout.EAST);
-		
+		getRootPane().setDefaultButton(btnOK);
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setVisible(true);

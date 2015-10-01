@@ -10,7 +10,7 @@ import java.util.Arrays;
  * @author Laty
  *
  */
-public class SourceImage implements Serializable{
+public class SourceImage implements Serializable {
 	/**
 	 * 
 	 */
@@ -40,10 +40,10 @@ public class SourceImage implements Serializable{
 		buildMatrix();
 	}
 
-	public SourceImage(double[] relevantFeatures , double[] expectedOutput){
+	public SourceImage(double[] relevantFeatures, double[] expectedOutput) {
 		this.relevantFeatures = relevantFeatures;
-		for(int i = 0 ; i<expectedOutput.length ; i++){
-			if (expectedOutput[i] !=0){
+		for (int i = 0; i < expectedOutput.length; i++) {
+			if (expectedOutput[i] != 0) {
 				label = (byte) i;
 			}
 		}
@@ -60,10 +60,10 @@ public class SourceImage implements Serializable{
 	public byte[] getCleanRawImage() {
 		return rawImage;
 	}
-	
+
 	public double[] getCleanRawDoubleImage() {
 		double[] res = new double[rawImage.length];
-		for(int i = 0 ; i<rawImage.length; i++){
+		for (int i = 0; i < rawImage.length; i++) {
 			res[i] = rawImage[i];
 		}
 		return res;
@@ -139,11 +139,12 @@ public class SourceImage implements Serializable{
 	}
 
 	/**
-	 * Extracts the relevant features from the SourceImage in an
-	 * array of <code>length</code> length and stores it.
+	 * Extracts the relevant features from the SourceImage in an array of
+	 * <code>length</code> length and stores it.
+	 * 
 	 * @param length
 	 */
-	public void buildRelevantFeatures(int length){
+	public void buildRelevantFeatures(int length) {
 		transformMatrix();
 		double[] temp = new double[imageSize * imageSize];
 		int i = 1;
@@ -170,9 +171,10 @@ public class SourceImage implements Serializable{
 		}
 		relevantFeatures = Arrays.copyOfRange(temp, 0, length);
 	}
-	
+
 	/**
-	 * Returns the relevant features of the <code>SourceImage</code> 
+	 * Returns the relevant features of the <code>SourceImage</code>
+	 * 
 	 * @return
 	 */
 	public double[] getRelevantFeatures() {
@@ -181,23 +183,17 @@ public class SourceImage implements Serializable{
 
 	/**
 	 * Returns the corresponding correct label for this image.
+	 * 
 	 * @return
 	 */
-	public byte getLabel(){
+	public byte getLabel() {
 		return label;
 	}
-	
-	public double[] getExpectedOutput(){
+
+	public double[] getExpectedOutput() {
 		double[] res;
-		if(LearningWindow.STANDARD_OUTPUT){
-			res = new double[10];
-			res[label] =1.;
-		}
-		else{
-			res = new double[]{0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1};
-			res[label] =0.9;
-		}
-		
+		res = new double[10];
+		res[label] = 1.;
 		return res;
 	}
 }

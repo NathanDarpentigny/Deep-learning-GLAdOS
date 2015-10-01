@@ -19,18 +19,20 @@ public class OutputNeuron extends AbstractNeuron {
 	private double neuronDiff = 0;
 	private List<AbstractNeuron> inputNeurons;
 	private double output;
+	private double defaultLR;
 	private double[] varLR;
 	private boolean[] gradientChangedSign;
 
-	public OutputNeuron(int size) {
+	public OutputNeuron(int size, double defaultLR) {
 		weights = new double[size + 1];
 		weightDiffs = new double[size + 1];
+		this.defaultLR = defaultLR;
 		gradientChangedSign = new boolean[size + 1];
 		varLR = new double[size + 1];
 		for (int c = 0; c < size + 1; c++) {
 			weights[c] = (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2)) / size;
 			weightDiffs[c] = 0.;
-			varLR[c] = LearningWindow.LEARNING_RATE;
+			varLR[c] = defaultLR;
 
 		}
 	}
@@ -99,19 +101,19 @@ public class OutputNeuron extends AbstractNeuron {
 		}
 	}
 
-	public void varyLR() {
+	public void varyLR(double decreaseLR, double increaseLR) {
 		for (int c = 0; c < weights.length; c++) {
 			if (gradientChangedSign[c]) {
-				varLR[c] = LearningWindow.INCREASE_LR * varLR[c];
+				varLR[c] = decreaseLR * varLR[c];
 			} else {
-				varLR[c] = LearningWindow.DECREASE_LR * varLR[c];
+				varLR[c] = increaseLR * varLR[c];
 			}
 		}
 	}
 
 	public void resetLR() {
 		for (int c = 0; c < weights.length; c++) {
-			varLR[c] = LearningWindow.LEARNING_RATE;
+			varLR[c] = defaultLR;
 		}
 
 	}

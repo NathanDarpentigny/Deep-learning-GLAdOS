@@ -22,18 +22,20 @@ public class IntermediateNeuron extends AbstractNeuron {
 	private List<AbstractNeuron> inputNeurons = new ArrayList<AbstractNeuron>();
 	private List<AbstractNeuron> outputNeurons;
 	private double output;
+	private double defaultLR;
 	private double[] varLR;
 	private boolean[] gradientChangedSign;
 
-	public IntermediateNeuron(int size) {
+	public IntermediateNeuron(int size, double defaultLR) {
 		weights = new double[size + 1];
+		this.defaultLR = defaultLR;
 		weightDiffs = new double[size + 1];
 		gradientChangedSign = new boolean[size + 1];
 		varLR = new double[size + 1];
 		for (int c = 0; c < size + 1; c++) {
 			weights[c] = (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2)) / size;
 			weightDiffs[c] = 0.;
-			varLR[c] = LearningWindow.LEARNING_RATE;
+			varLR[c] = defaultLR;
 
 		}
 	}
@@ -127,19 +129,19 @@ public class IntermediateNeuron extends AbstractNeuron {
 		}
 	}
 
-	public void varyLR() {
+	public void varyLR(double decreaseLR, double increaseLR) {
 		for (int c = 0; c < weights.length; c++) {
 			if (gradientChangedSign[c]) {
-				varLR[c] = LearningWindow.INCREASE_LR * varLR[c];
+				varLR[c] = decreaseLR * varLR[c];
 			} else {
-				varLR[c] = LearningWindow.DECREASE_LR * varLR[c];
+				varLR[c] = increaseLR * varLR[c];
 			}
 		}
 	}
 
 	public void resetLR() {
 		for (int c = 0; c < weights.length; c++) {
-			varLR[c] = LearningWindow.LEARNING_RATE;
+			varLR[c] = defaultLR;
 		}
 
 	}
