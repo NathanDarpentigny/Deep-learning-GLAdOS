@@ -15,7 +15,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -27,15 +26,14 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
 /**
- * This window is executable and allows the training of a new
+ * This visual window is executable and allows the training of a new
  * <code>NeuralNetwork</code> from scratch and following a number of parameters.
  * The NeuralNetwork always has one and only one hidden layer because this has
  * been found to be the quickest and most reliable type of NeuralNetwork.
@@ -46,76 +44,7 @@ import javax.swing.DefaultComboBoxModel;
 public class LearningWindow extends ApplicationFrame {
 
 	private static final long serialVersionUID = 1L;
-	/**
-	 * If true, will only create a simple NeuronNetwork to test out logic
-	 * functions (AND by default). Allows the testing of the backpropagation
-	 * algorithm.
-	 */
-	private static final boolean SIMPLE = false;
-	/**
-	 * If true, enables a variable learning rate, following the method given by
-	 * the Popescu article.
-	 */
-	private static final boolean VAR_LEARNING_RATE = true;
-	/**
-	 * If true, shows the error per epoch of the NeuralNetwork in the console.
-	 */
-	private static final boolean SHOW_ERROR_PER_EPOCH = true;
-	/**
-	 * If true, creates a NeuralNetwork which treats preprocessed images
-	 * following the method given by the Leon and Sandu article. If false,
-	 * simply creates a NeuralNetwork with as much input neurons as pixels.
-	 */
-	private static final boolean PREPROCESSING = false;
-	/**
-	 * If true, will show the output of the last test of an epoch in the
-	 * console.
-	 */
-	private static final boolean SHOW_OUTPUT = false;
-	/**
-	 * If true, will show the image of the last test of an epoch in a window.
-	 */
-	private static final boolean SHOW_IMAGE = false;
-	/**
-	 * If false, will replace the standard desired output with intermediate
-	 * values to avoid probabilistic conversions (not very useful).
-	 */
-	private static final boolean STANDARD_OUTPUT = true;
-	/**
-	 * If false will increment weights after each test rather than after each
-	 * epoch.
-	 */
-	private static final boolean INCREMENT_PER_EPOCH = false;
 
-	/**
-	 * The size of the input when <code>PREPROCESSING</code> is true.
-	 */
-	private static final int INPUT_LENGTH = 100;
-	/**
-	 * The default learning rate for this learning algorithm.
-	 */
-	private static final double LEARNING_RATE = 0.00001;
-	// private static final double MAX_LR = 2.;
-	/**
-	 * The first parameter in case of variable learning rate.
-	 */
-	private static final double DECREASE_LR = 0.8;
-	/**
-	 * The second parameter in case of variable learning rate.
-	 */
-	private static final double INCREASE_LR = 1.5;
-	/**
-	 * The momentum rate of the algorithm which is applied following the method
-	 * described in the Popescu article. Can be set to 0. to disable this
-	 * modification.
-	 */
-	private static final double MOMENTUM_RATE = 0.3;
-	/**
-	 * The size of epochs for the current learning algorithm.
-	 */
-	private static final int EPOCH_SIZE = 1000;
-
-	private static final double TARGET_ERROR_PER_EPOCH = 80.;
 	private JTextField txtDefaultLearningRate;
 	private JTextField txtEpochSize;
 	private JTextField txtTargetErrorPer;
@@ -139,12 +68,35 @@ public class LearningWindow extends ApplicationFrame {
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		LearningWindow frame = new LearningWindow("Test");
-		// frame.learningAlg(SIMPLE, VAR_LEARNING_RATE, PREPROCESSING,
-		// INCREMENT_PER_EPOCH, LEARNING_RATE, DECREASE_LR, INCREASE_LR,
-		// MOMENTUM_RATE, EPOCH_SIZE,TARGET_ERROR_PER_EPOCH);
+		new LearningWindow("Test");
 	}
 
+	/**
+	 * Creates a new Neural network and launches the learning algorithm
+	 * following the backpropagation method.
+	 * 
+	 * @param simple
+	 * @param variableLR
+	 *            : if true the learning rate will be adaptable, following the
+	 *            decreaseLR_factor and increaseLR_factor.
+	 * @param preprocessing
+	 *            : if true, uses preprocessed images (following the method
+	 *            described in the Leon and Sandu article method).
+	 * @param incrementPerEpoch
+	 *            : if true, increments only every epoch rather than after every
+	 *            example.
+	 * @param defaultLR
+	 *            : the default learning rate.
+	 * @param decreaseLR_factor
+	 * @param increaseLR_factor
+	 * @param momentumRate
+	 *            : the momentum factor, if 0, is equivalent to no momentum.
+	 * @param epochSize
+	 *            : the size of one epoch.
+	 * @param targetError
+	 *            : the target error for one epoch after which the learning
+	 *            algorithm will stop.
+	 */
 	@SuppressWarnings("unused")
 	public void learningAlg(boolean simple, boolean variableLR, boolean preprocessing, boolean incrementPerEpoch,
 			double defaultLR, double decreaseLR_factor, double increaseLR_factor, double momentumRate, int epochSize,
@@ -174,16 +126,9 @@ public class LearningWindow extends ApplicationFrame {
 		SourceImage currentImage;
 		byte[] show = null;
 		int epochNumber = 0;
-		
-		if (!simple) {
-			JFrame mainwindow = new JFrame();
-			if (SHOW_IMAGE && !preprocessing) {
 
-				mainwindow.setSize(300, 200);
-				mainwindow.setLocationRelativeTo(null);
-				mainwindow.setTitle("Image Preview");
-				mainwindow.setVisible(true);
-			}
+		if (!simple) {
+
 			NeuralNetwork learningNN;
 			List<SourceImage> cleanInput;
 			if (preprocessing) {
@@ -215,32 +160,23 @@ public class LearningWindow extends ApplicationFrame {
 						}
 						errorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
 					}
-					if (SHOW_IMAGE && !preprocessing) {
-						mainwindow.setContentPane(new ImageDisplayPanel(show));
-						mainwindow.repaint();
 
-						mainwindow.revalidate();
-					}
-					if (SHOW_OUTPUT) {
-						//System.out.println(learningNN.getOutputs());
-					}
-					
 					epochNumber++;
-					//System.out.println(errorNumber);
-					series.add((double)epochNumber,errorPerEpoch);
-					
+					// System.out.println(errorNumber);
+					series.add((double) epochNumber, errorPerEpoch);
+
 					learningData = new XYSeriesCollection(series);
-					JFreeChart chart = ChartFactory.createXYLineChart("Quadratic error per epoch", "Epoch number", "Error per epoch", learningData);
+					JFreeChart chart = ChartFactory.createXYLineChart("Quadratic error per epoch", "Epoch number",
+							"Error per epoch", learningData);
 					graphPanel.setChart(chart);
 					update(getGraphics());
 					revalidate();
-					
-			
-					//graphPanel.revalidate();
-					
+
+					// graphPanel.revalidate();
+
 					learningNN.incrementWeights();
 					learningNN.resetWeightDiffsMomentum(momentumRate);
-					
+
 					if (variableLR) {
 						if (errorPerEpoch > lastEpochError) {
 							learningNN.resetLR();
@@ -249,11 +185,11 @@ public class LearningWindow extends ApplicationFrame {
 						}
 					}
 					lastEpochError = errorPerEpoch;
-					
+
 				}
-				
+
 			}
-		
+
 			update(getGraphics());
 			revalidate();
 			try {
@@ -298,9 +234,7 @@ public class LearningWindow extends ApplicationFrame {
 				// learningNN.incrementWeights();
 				// //learningNN.resetWeightDiffs();
 				// learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
-				if (SHOW_ERROR_PER_EPOCH) {
-					//System.out.println(errorPerEpoch);
-				}
+
 				errorPerEpoch = 0.;
 
 			}
@@ -315,7 +249,10 @@ public class LearningWindow extends ApplicationFrame {
 		res = res / 2.;
 		return res;
 	}
-
+	/**
+	 * Creates the UI window for a learning algorithm.
+	 * @param title
+	 */
 	public LearningWindow(final String title) {
 		super(title);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -325,18 +262,20 @@ public class LearningWindow extends ApplicationFrame {
 		setLocationRelativeTo(null);
 		getContentPane().setLayout(null);
 
-		JComboBox simpleBox = new JComboBox();
-		simpleBox.setModel(new DefaultComboBoxModel(new String[] {"Digit Recognition", "Simple Logic Functon Recognition"}));
+		JComboBox<String> simpleBox = new JComboBox<String>();
+		simpleBox.setModel((ComboBoxModel<String>) new DefaultComboBoxModel<String>(
+				new String[] { "Digit Recognition", "Simple Logic Functon Recognition" }));
 		simpleBox.setBounds(10, 22, 218, 20);
 		getContentPane().add(simpleBox);
-		
+
 		learningData = new XYSeriesCollection(series);
-		JFreeChart chart = ChartFactory.createXYLineChart("Quadratic error per epoch", "Epoch number", "Error per epoch", learningData);
-		
+		JFreeChart chart = ChartFactory.createXYLineChart("Quadratic error per epoch", "Epoch number",
+				"Error per epoch", learningData);
+
 		graphPanel = new ChartPanel(chart);
 		graphPanel.setReshowDelay(1);
 		graphPanel.setRefreshBuffer(true);
-		
+
 		graphPanel.setBounds(10, 189, 464, 279);
 		getContentPane().add(graphPanel);
 
@@ -360,8 +299,6 @@ public class LearningWindow extends ApplicationFrame {
 		spinnerIncreaseLR.setBounds(427, 102, 47, 20);
 		getContentPane().add(spinnerIncreaseLR);
 
-		
-
 		JRadioButton rdbtnAdaptableLearningRate = new JRadioButton("Adaptable learning rate");
 		rdbtnAdaptableLearningRate.setSelected(true);
 		rdbtnAdaptableLearningRate.addActionListener(new ActionListener() {
@@ -379,8 +316,6 @@ public class LearningWindow extends ApplicationFrame {
 		spinnerMomentumFact.setModel(new SpinnerNumberModel(0.4, 0.0, 1.0, .1));
 		spinnerMomentumFact.setBounds(417, 128, 57, 20);
 		getContentPane().add(spinnerMomentumFact);
-
-		
 
 		JRadioButton rdbtnMomentum = new JRadioButton("Momentum");
 		rdbtnMomentum.setSelected(true);
@@ -445,7 +380,6 @@ public class LearningWindow extends ApplicationFrame {
 		txtIncreaseAndDecrease.setBounds(188, 102, 170, 20);
 		getContentPane().add(txtIncreaseAndDecrease);
 		txtIncreaseAndDecrease.setColumns(10);
-		
 
 		txtMomentumFactor = new JTextField();
 		txtMomentumFactor.setBorder(null);
@@ -455,12 +389,11 @@ public class LearningWindow extends ApplicationFrame {
 		txtMomentumFactor.setBounds(277, 128, 130, 20);
 		getContentPane().add(txtMomentumFactor);
 		txtMomentumFactor.setColumns(10);
-		
 
 		JButton btnLaunch = new JButton("Launch Learning Algorithm");
 		btnLaunch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				btnLaunch.setEnabled(false);
 				if (rdbtnMomentum.isSelected()) {
 					learningAlg((simpleBox.getSelectedIndex() == 1), rdbtnAdaptableLearningRate.isSelected(),
