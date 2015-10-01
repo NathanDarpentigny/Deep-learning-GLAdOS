@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -22,6 +24,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -29,6 +32,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
+
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
@@ -93,14 +97,14 @@ public class LearningWindow extends ApplicationFrame {
 	 *            : the momentum factor, if 0, is equivalent to no momentum.
 	 * @param epochSize
 	 *            : the size of one epoch.
-	 * @param targetError
+	 * @param targetAverageError
 	 *            : the target error for one epoch after which the learning
 	 *            algorithm will stop.
 	 */
 	@SuppressWarnings("unused")
 	public void learningAlg(boolean simple, boolean variableLR, boolean preprocessing, boolean incrementPerEpoch,
 			double defaultLR, double decreaseLR_factor, double increaseLR_factor, double momentumRate, int epochSize,
-			double targetError) {
+			double targetAverageError) {
 		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
 		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
 		Preprocessing processedFile = null;
@@ -114,21 +118,20 @@ public class LearningWindow extends ApplicationFrame {
 			labelsArray = Files.readAllBytes(trainLabels);
 			// System.out.println(new String(imagesArray,"ISO-8859-1"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		double errorPerEpoch = Double.MAX_VALUE;
-		double lastEpochError = 1.;
+		double averageErrorPerEpoch = Double.MAX_VALUE;
+		double lastAverageEpochError = Double.MAX_VALUE;
 		double learningRate = defaultLR;
 		double[] expectedOutput = null;
 		double[] input;
 		SourceImage currentImage;
 		byte[] show = null;
 		int epochNumber = 0;
-
+		
 		if (!simple) {
-
+			int i = 0;
 			NeuralNetwork learningNN;
 			List<SourceImage> cleanInput;
 			if (preprocessing) {
@@ -138,75 +141,100 @@ public class LearningWindow extends ApplicationFrame {
 				learningNN = new NeuralNetwork(new int[] { 28 * 28, 100, 40, 10 }, learningRate);
 				cleanInput = createCleanInput(rawImagesArray, labelsArray);
 			}
-			while (errorPerEpoch > targetError) {
-				for (int i = 0; i < cleanInput.size() / epochSize; i++) {
-					errorPerEpoch = 0.;
-					for (int j = 0; j < epochSize; j++) {
-						currentImage = cleanInput.get(i * epochSize + j);
-						show = currentImage.getCleanRawImage();
-						if (preprocessing) {
-							input = currentImage.getRelevantFeatures();
-						} else {
-							input = currentImage.getCleanRawDoubleImage();
-						}
-						learningNN.setInputs(input);
-						learningNN.fire();
-						expectedOutput = currentImage.getExpectedOutput();
-						learningNN.calculateNeuronDiffs(expectedOutput);
-						learningNN.incrementWeightDiffs();
-						if (!incrementPerEpoch) {
-							learningNN.incrementWeights();
-							learningNN.resetWeightDiffsMomentum(momentumRate);
-						}
-						errorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
+			while (averageErrorPerEpoch > targetAverageError) {
+				
+				
+				
+				averageErrorPerEpoch = 0.;
+				for (int j = 0; j < epochSize; j++) {
+					i = (int)(Math.random()*cleanInput.size());
+					currentImage = cleanInput.get(i);
+					show = currentImage.getCleanRawImage();
+					if (preprocessing) {
+						input = currentImage.getRelevantFeatures();
+					} else {
+						input = currentImage.getCleanRawDoubleImage();
 					}
-
-					epochNumber++;
-					// System.out.println(errorNumber);
-					series.add((double) epochNumber, errorPerEpoch);
-
-					learningData = new XYSeriesCollection(series);
-					JFreeChart chart = ChartFactory.createXYLineChart("Quadratic error per epoch", "Epoch number",
-							"Error per epoch", learningData);
-					graphPanel.setChart(chart);
-					update(getGraphics());
-					revalidate();
-
-					// graphPanel.revalidate();
-
-					learningNN.incrementWeights();
-					learningNN.resetWeightDiffsMomentum(momentumRate);
-
-					if (variableLR) {
-						if (errorPerEpoch > lastEpochError) {
-							learningNN.resetLR();
-						} else {
-							learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
-						}
+					learningNN.setInputs(input);
+					learningNN.fire();
+					expectedOutput = currentImage.getExpectedOutput();
+					learningNN.calculateNeuronDiffs(expectedOutput);
+					learningNN.incrementWeightDiffs();
+					if (!incrementPerEpoch) {
+						learningNN.incrementWeights();
+						learningNN.resetWeightDiffsMomentum(momentumRate);
 					}
-					lastEpochError = errorPerEpoch;
-
+					averageErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
 				}
+				
+				epochNumber++;
+				averageErrorPerEpoch = averageErrorPerEpoch/epochSize*100;
+				// System.out.println(errorNumber);
+				series.add((double) epochNumber, averageErrorPerEpoch);
+
+				learningData = new XYSeriesCollection(series);
+				JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
+						"Average quadratic error (%)", learningData);
+				graphPanel.setChart(chart);
+				update(getGraphics());
+				revalidate();
+
+				// graphPanel.revalidate();
+
+				learningNN.incrementWeights();
+				learningNN.resetWeightDiffsMomentum(momentumRate);
+
+				if (variableLR) {
+					if (averageErrorPerEpoch > lastAverageEpochError) {
+						//learningNN.resetLR();
+					} else {
+						learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
+					}
+				}
+				lastAverageEpochError = averageErrorPerEpoch;
+
+				
 
 			}
 
 			update(getGraphics());
 			revalidate();
+			
+			JFileChooser chooser = new JFileChooser(".");
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Session Files", "ses");
+			
+			int returnVal = chooser.showSaveDialog(this);
+
 			try {
-				FileOutputStream fileOut;
-				if (preprocessing) {
-					fileOut = new FileOutputStream("src/resultingNN/latest.pre");
-				} else {
-					fileOut = new FileOutputStream("src/resultingNN/latest.rw");
+				if (returnVal ==JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+					FileOutputStream fileOut;
+					if (preprocessing) {
+						if(chooser.getSelectedFile().getPath().endsWith(".pre")){
+							fileOut = new FileOutputStream("resultingNN/"+chooser.getSelectedFile().getPath());
+						}
+						else{
+							fileOut = new FileOutputStream("resultingNN/"+chooser.getSelectedFile().getPath()+".pre");
+						}
+						
+					} else {
+						if(chooser.getSelectedFile().getPath().endsWith(".rw")){
+							fileOut = new FileOutputStream("resultingNN/"+chooser.getSelectedFile().getPath());
+						}
+						else{
+							fileOut = new FileOutputStream("resultingNN/"+chooser.getSelectedFile().getPath()+".rw");
+						}
+					}
+					ObjectOutputStream out = new ObjectOutputStream(fileOut);
+					out.writeObject(learningNN);
+					out.close();
+					fileOut.close();
 				}
-				ObjectOutputStream out = new ObjectOutputStream(fileOut);
-				out.writeObject(learningNN);
-				out.close();
-				fileOut.close();
-			} catch (IOException e) {
+
+			} catch (Exception e) {
+
 				e.printStackTrace();
 			}
-
+			this.dispose();
 		}
 
 		else {
@@ -229,13 +257,23 @@ public class LearningWindow extends ApplicationFrame {
 					// instead of "+ expectedOutput[0]);
 					learningNN.incrementWeights();
 					learningNN.resetWeightDiffsMomentum(momentumRate);
-					errorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
+					averageErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
 				}
+				epochNumber++;
+				// System.out.println(errorNumber);
+				series.add((double) epochNumber, averageErrorPerEpoch*100);
+
+				learningData = new XYSeriesCollection(series);
+				JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
+						"Average quadratic error (%)", learningData);
+				graphPanel.setChart(chart);
+				update(getGraphics());
+				revalidate();
 				// learningNN.incrementWeights();
 				// //learningNN.resetWeightDiffs();
 				// learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
 
-				errorPerEpoch = 0.;
+				averageErrorPerEpoch = 0.;
 
 			}
 		}
@@ -255,7 +293,7 @@ public class LearningWindow extends ApplicationFrame {
 	 */
 	public LearningWindow(final String title) {
 		super(title);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		setTitle("Visualisation");
 		setSize(500, 528);
@@ -265,12 +303,12 @@ public class LearningWindow extends ApplicationFrame {
 		JComboBox<String> simpleBox = new JComboBox<String>();
 		simpleBox.setModel((ComboBoxModel<String>) new DefaultComboBoxModel<String>(
 				new String[] { "Digit Recognition", "Simple Logic Functon Recognition" }));
-		simpleBox.setBounds(10, 22, 218, 20);
+		simpleBox.setBounds(10, 22, 193, 20);
 		getContentPane().add(simpleBox);
 
 		learningData = new XYSeriesCollection(series);
-		JFreeChart chart = ChartFactory.createXYLineChart("Quadratic error per epoch", "Epoch number",
-				"Error per epoch", learningData);
+		JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
+				"Average quadratic error (%)", learningData);
 
 		graphPanel = new ChartPanel(chart);
 		graphPanel.setReshowDelay(1);
@@ -290,12 +328,12 @@ public class LearningWindow extends ApplicationFrame {
 		getContentPane().add(rdbtnIncrementEveryTime);
 
 		JSpinner spinnerDecreaseLR = new JSpinner();
-		spinnerDecreaseLR.setModel(new SpinnerNumberModel(0.8, 0.0, 1.0, 1.0));
+		spinnerDecreaseLR.setModel(new SpinnerNumberModel(0.8, 0.0, 1.0, 0.1));
 		spinnerDecreaseLR.setBounds(368, 102, 46, 20);
 		getContentPane().add(spinnerDecreaseLR);
 
 		JSpinner spinnerIncreaseLR = new JSpinner();
-		spinnerIncreaseLR.setModel(new SpinnerNumberModel(1.2, new Double(1), null, new Double(0)));
+		spinnerIncreaseLR.setModel(new SpinnerNumberModel(1.2, new Double(1), null, new Double(0.1)));
 		spinnerIncreaseLR.setBounds(427, 102, 47, 20);
 		getContentPane().add(spinnerIncreaseLR);
 
@@ -357,7 +395,7 @@ public class LearningWindow extends ApplicationFrame {
 		txtEpochSize.setColumns(10);
 
 		JSpinner spinnerTarget = new JSpinner();
-		spinnerTarget.setModel(new SpinnerNumberModel(new Double(20), new Double(0), null, new Double(2)));
+		spinnerTarget.setModel(new SpinnerNumberModel(new Double(10), new Double(0), new Double(100), new Double(1)));
 		spinnerTarget.setBounds(417, 22, 57, 20);
 		getContentPane().add(spinnerTarget);
 
@@ -367,8 +405,8 @@ public class LearningWindow extends ApplicationFrame {
 		txtTargetErrorPer.setFocusable(false);
 		txtTargetErrorPer.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtTargetErrorPer.setEditable(false);
-		txtTargetErrorPer.setText("Target error per epoch");
-		txtTargetErrorPer.setBounds(277, 22, 130, 20);
+		txtTargetErrorPer.setText("Target average error per epoch (%)");
+		txtTargetErrorPer.setBounds(226, 22, 181, 20);
 		getContentPane().add(txtTargetErrorPer);
 		txtTargetErrorPer.setColumns(10);
 
