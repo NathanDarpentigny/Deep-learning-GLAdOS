@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,8 +23,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -54,9 +51,12 @@ public class LearningWindow extends ApplicationFrame {
 	private JTextField txtTargetErrorPer;
 	private JTextField txtIncreaseAndDecrease;
 	private JTextField txtMomentumFactor;
-	private XYSeriesCollection learningData;
-	private XYSeries series = new XYSeries("");
+	private XYSeriesCollection errorData;
+	private XYSeriesCollection mistakeData;
+	private XYSeries errorSeries = new XYSeries("");
+	private XYSeries mistakeSeries = new XYSeries("");
 	private ChartPanel graphPanel;
+	private ChartPanel mistakePanel;
 	// private VisualPanel contentPane;
 	// private static double[] expectedResult = new double[]{0.8,0.4,0.6};
 
@@ -98,10 +98,10 @@ public class LearningWindow extends ApplicationFrame {
 	 * @param epochSize
 	 *            : the size of one epoch.
 	 * @param targetAverageError
-	 *            : the target error for one epoch after which the learning
+	 *            : the target average error for one epoch (in percentage) after which the learning
 	 *            algorithm will stop.
 	 */
-	@SuppressWarnings("unused")
+	//@SuppressWarnings("unused")
 	public void learningAlg(boolean simple, boolean variableLR, boolean preprocessing, boolean incrementPerEpoch,
 			double defaultLR, double decreaseLR_factor, double increaseLR_factor, double momentumRate, int epochSize,
 			double targetAverageError) {
@@ -127,11 +127,12 @@ public class LearningWindow extends ApplicationFrame {
 		double[] expectedOutput = null;
 		double[] input;
 		SourceImage currentImage;
-		byte[] show = null;
+		//byte[] show = null;
 		int epochNumber = 0;
 		
 		if (!simple) {
 			int i = 0;
+			int numberOfMistakesPerEpoch = 0;
 			NeuralNetwork learningNN;
 			List<SourceImage> cleanInput;
 			if (preprocessing) {
@@ -146,10 +147,11 @@ public class LearningWindow extends ApplicationFrame {
 				
 				
 				averageErrorPerEpoch = 0.;
+				numberOfMistakesPerEpoch = 0;
 				for (int j = 0; j < epochSize; j++) {
 					i = (int)(Math.random()*cleanInput.size());
 					currentImage = cleanInput.get(i);
-					show = currentImage.getCleanRawImage();
+					//show = currentImage.getCleanRawImage();
 					if (preprocessing) {
 						input = currentImage.getRelevantFeatures();
 					} else {
@@ -163,23 +165,25 @@ public class LearningWindow extends ApplicationFrame {
 					if (!incrementPerEpoch) {
 						learningNN.incrementWeights();
 						learningNN.resetWeightDiffsMomentum(momentumRate);
+						if(variableLR){
+							learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
+						}
 					}
+					if(maxIndex(learningNN.getOutputs())!= maxIndex(currentImage.getExpectedOutput())){
+						numberOfMistakesPerEpoch ++;
+					}
+					
 					averageErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
+					
 				}
+				
 				
 				epochNumber++;
 				averageErrorPerEpoch = averageErrorPerEpoch/epochSize*100;
-				// System.out.println(errorNumber);
-				series.add((double) epochNumber, averageErrorPerEpoch);
-
-				learningData = new XYSeriesCollection(series);
-				JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
-						"Average quadratic error (%)", learningData);
-				graphPanel.setChart(chart);
+				errorSeries.add((double) epochNumber, averageErrorPerEpoch);
+				
 				update(getGraphics());
-				revalidate();
 
-				// graphPanel.revalidate();
 
 				learningNN.incrementWeights();
 				learningNN.resetWeightDiffsMomentum(momentumRate);
@@ -201,7 +205,7 @@ public class LearningWindow extends ApplicationFrame {
 			revalidate();
 			
 			JFileChooser chooser = new JFileChooser(".");
-			FileNameExtensionFilter filter = new FileNameExtensionFilter("Session Files", "ses");
+			//FileNameExtensionFilter filter = new FileNameExtensionFilter("Session Files", "ses");
 			
 			int returnVal = chooser.showSaveDialog(this);
 
@@ -261,11 +265,11 @@ public class LearningWindow extends ApplicationFrame {
 				}
 				epochNumber++;
 				// System.out.println(errorNumber);
-				series.add((double) epochNumber, averageErrorPerEpoch*100);
+				errorSeries.add((double) epochNumber, averageErrorPerEpoch*100);
 
-				learningData = new XYSeriesCollection(series);
+				errorData = new XYSeriesCollection(errorSeries);
 				JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
-						"Average quadratic error (%)", learningData);
+						"Average quadratic error (%)", errorData);
 				graphPanel.setChart(chart);
 				update(getGraphics());
 				revalidate();
@@ -296,7 +300,7 @@ public class LearningWindow extends ApplicationFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		setTitle("Visualisation");
-		setSize(500, 528);
+		setSize(1000, 529);
 		setLocationRelativeTo(null);
 		getContentPane().setLayout(null);
 
@@ -306,16 +310,21 @@ public class LearningWindow extends ApplicationFrame {
 		simpleBox.setBounds(10, 22, 193, 20);
 		getContentPane().add(simpleBox);
 
-		learningData = new XYSeriesCollection(series);
-		JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
-				"Average quadratic error (%)", learningData);
+		errorData = new XYSeriesCollection(errorSeries);
+		JFreeChart errorChart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
+				"Average quadratic error (%)", errorData);
 
-		graphPanel = new ChartPanel(chart);
-		graphPanel.setReshowDelay(1);
-		graphPanel.setRefreshBuffer(true);
-
+		graphPanel = new ChartPanel(errorChart);
 		graphPanel.setBounds(10, 189, 464, 279);
 		getContentPane().add(graphPanel);
+		
+		
+		mistakeData = new XYSeriesCollection(mistakeSeries);
+		JFreeChart mistakeChart = ChartFactory.createXYLineChart("Mistakes per epoch (%)", "Epoch number",
+				"Mistakes per epoch (%)", mistakeData);
+		mistakePanel = new ChartPanel(mistakeChart);
+		mistakePanel.setBounds(509, 189, 464, 279);
+		getContentPane().add(mistakePanel);
 
 		JRadioButton rdbtnPreprocessing = new JRadioButton("Preprocessing");
 		rdbtnPreprocessing.setSelected(true);
@@ -452,6 +461,8 @@ public class LearningWindow extends ApplicationFrame {
 		btnLaunch.setBounds(10, 159, 464, 23);
 		getRootPane().setDefaultButton(btnLaunch);
 		getContentPane().add(btnLaunch);
+		
+	
 		// contentPane.setBackground(Color.ORANGE);
 		// setContentPane(contentPane);
 		setVisible(true);
@@ -508,6 +519,32 @@ public class LearningWindow extends ApplicationFrame {
 			res.add(new SourceImage(features[i], expectedOutputs[i]));
 		}
 
+		return res;
+	}
+
+	public static int maxIndex(List<Double> list){
+		int res = 0;
+		double maxValue = Double.MIN_VALUE;
+		
+		for(int i = 0 ; i< list.size(); i++){
+			if(list.get(i)>maxValue){
+				res = i;
+				maxValue = list.get(i);
+			}
+		}
+		return res;
+	}
+
+	public static int maxIndex(double[] array){
+		int res = 0;
+		double maxValue = Double.MIN_VALUE;
+		
+		for(int i = 0 ; i< array.length; i++){
+			if(array[i]>maxValue){
+				res = i;
+				maxValue =array[i];
+			}
+		}
 		return res;
 	}
 }
