@@ -47,7 +47,7 @@ public class IntermediateNeuron extends AbstractNeuron {
 		}
 		temp += weights[weights.length - 1];
 		output = activationFun(temp);
-	}
+	} 
 
 	public double getOutput() {
 		return output;
