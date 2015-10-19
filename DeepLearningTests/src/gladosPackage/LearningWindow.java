@@ -132,20 +132,20 @@ public class LearningWindow extends ApplicationFrame {
 		}
 
 		double averageErrorPerEpoch = Double.MAX_VALUE;
-		double lastAverageEpochError = Double.MAX_VALUE;
+//		double lastAverageEpochError = Double.MAX_VALUE;
 		double averageTestErrorPerEpoch = Double.MAX_VALUE;
 		double learningRate = defaultLR;
 		double[] expectedOutput = null;
 		double[] input;
-		int epochSize;
+		int epochSize = 48000;
 		int[] currentPermutation;
 		SourceImage currentImage;
 		int epochNumber = 0;
 		
 		if (!simple) {
 			int i = 0;
-			int numberOfMistakesPerEpoch = 0;
-			int numberOfTestMistakesPerEpoch = 0;
+//			int numberOfMistakesPerEpoch = 0;
+//			int numberOfTestMistakesPerEpoch = 0;
 			NeuralNetwork learningNN;
 			List<SourceImage> cleanInput;
 			if (preprocessing) {
@@ -157,87 +157,45 @@ public class LearningWindow extends ApplicationFrame {
 				cleanInput = createCleanInput(rawImagesArray, labelsArray);
 				cleanInput = permutateRandomly(cleanInput);
 			}
-			epochSize = (int)(learningProportion*cleanInput.size());
 			while (averageTestErrorPerEpoch > targetAverageError) {
+				int learningSize = (int) (cleanInput.size()*learningProportion);
+				//System.out.println(learningSize);
+				currentPermutation = getRandomPermutation(learningSize);
 				
-				currentPermutation = getRandomPermutation(epochSize);
 				
-				averageErrorPerEpoch = 0.;
-				numberOfMistakesPerEpoch = 0;
-				averageTestErrorPerEpoch = 0.;
-				numberOfTestMistakesPerEpoch = 0;
-				
-				for (int j = 0; j < epochSize; j++) {
-					i = currentPermutation[j];
-					currentImage = cleanInput.get(i);
-					if (preprocessing) {
-						input = currentImage.getRelevantFeatures();
-					} else {
-						input = currentImage.getCleanRawDoubleImage();
-					}
-					learningNN.setInputs(input);
-					learningNN.fire();
-					expectedOutput = currentImage.getExpectedOutput();
-					learningNN.calculateNeuronDiffs(expectedOutput);
-					learningNN.incrementWeightDiffs();
-					if (!incrementPerEpoch) {
-						learningNN.incrementWeights();
-						learningNN.resetWeightDiffsMomentum(momentumRate);
-						if(variableLR){
-							learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
+				for(int j = 0 ;  j< learningSize/epochSize ; j++){
+					for(int c = 0 ; c< epochSize ; c++){
+						i = currentPermutation[j*epochSize+c];
+						//System.out.println(j*epochSize+c);
+						currentImage = cleanInput.get(i);
+						if (preprocessing) {
+							input = currentImage.getRelevantFeatures();
+						} else {
+							input = currentImage.getCleanRawDoubleImage();
+						}
+						learningNN.setInputs(input);
+						learningNN.fire();
+						expectedOutput = currentImage.getExpectedOutput();
+						learningNN.calculateNeuronDiffs(expectedOutput);
+						learningNN.incrementWeightDiffs();
+						if (!incrementPerEpoch) {
+							learningNN.incrementWeights();
+							learningNN.resetWeightDiffsMomentum(momentumRate);
+							if(variableLR){
+								learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
+							}
 						}
 					}
-					if(maxIndex(learningNN.getOutputs())!= maxIndex(currentImage.getExpectedOutput())){
-						numberOfMistakesPerEpoch ++;
-					}
 					
-					averageErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
+					epochNumber++;
+					averageTestErrorPerEpoch = testLearningNN(cleanInput.size(),learningSize, cleanInput, learningNN, preprocessing, epochNumber);
+					update(getGraphics());
+					if(incrementPerEpoch){
+						learningNN.incrementWeights();
+						learningNN.resetWeightDiffsMomentum(momentumRate);
+					}
 					
 				}
-				
-				for(int j = epochSize ; j< cleanInput.size() ; j++){
-					currentImage = cleanInput.get(j);
-					if (preprocessing) {
-						input = currentImage.getRelevantFeatures();
-					} else {
-						input = currentImage.getCleanRawDoubleImage();
-					}
-					learningNN.setInputs(input);
-					learningNN.fire();
-					expectedOutput = currentImage.getExpectedOutput();
-					if(maxIndex(learningNN.getOutputs())!= maxIndex(currentImage.getExpectedOutput())){
-						numberOfTestMistakesPerEpoch ++;
-					}
-					
-					averageTestErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
-					
-				}
-				
-				
-				epochNumber++;
-				averageErrorPerEpoch = averageErrorPerEpoch/epochSize*100;
-				averageTestErrorPerEpoch = averageTestErrorPerEpoch/(cleanInput.size()-epochSize)*100;
-				testErrorSeries.add((double) epochNumber, averageTestErrorPerEpoch);
-				errorSeries.add((double) epochNumber, averageErrorPerEpoch);
-				testMistakeSeries.add((double)epochNumber, (double)numberOfTestMistakesPerEpoch*100./(cleanInput.size()-epochSize));	
-				mistakeSeries.add((double)epochNumber, (double)numberOfMistakesPerEpoch*100./epochSize);			
-				update(getGraphics());
-
-
-				learningNN.incrementWeights();
-				learningNN.resetWeightDiffsMomentum(momentumRate);
-
-				if (variableLR) {
-					if (averageErrorPerEpoch > lastAverageEpochError) {
-						learningNN.resetLR();
-					} else {
-						learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
-					}
-				}
-				lastAverageEpochError = averageErrorPerEpoch;
-
-				
-
 			}
 
 			update(getGraphics());
@@ -319,6 +277,7 @@ public class LearningWindow extends ApplicationFrame {
 			}
 		}
 	}
+	
 
 	private static double currentError(double[] expectedOutput, List<Double> outputs) {
 		double res = 0;
@@ -646,12 +605,13 @@ public class LearningWindow extends ApplicationFrame {
 		
 	}
 
-	private void testLearningNN(int totalSourceSize, int learningSourceSize, List<SourceImage> cleanInput, NeuralNetwork learningNN, boolean preprocessing, int epochNumber){
+	private double testLearningNN(int totalSourceSize, int learningSourceSize, List<SourceImage> cleanInput, NeuralNetwork learningNN, boolean preprocessing, int epochNumber){
 		double[] input;
-		int averageTestMistakes =0;
-		int averageLearningMistakes =0;
+		double averageTestMistakes =0;
+		double averageLearningMistakes =0;
 		double averageTestError =0;
 		double averageLearningError =0;
+		
 		for(int j = 0 ; j< learningSourceSize ; j++){
 			SourceImage currentImage = cleanInput.get(j);
 			if (preprocessing) {
@@ -667,9 +627,10 @@ public class LearningWindow extends ApplicationFrame {
 			}
 			
 			averageLearningError += currentError(expectedOutput, learningNN.getOutputs());
-			averageLearningError += currentError(expectedOutput, learningNN.getOutputs());
 		}
+		averageLearningMistakes = averageLearningMistakes/learningSourceSize;
 		averageLearningError = averageLearningError/learningSourceSize;
+		
 		for(int j = learningSourceSize ; j<totalSourceSize ; j++){
 			SourceImage currentImage = cleanInput.get(j);
 			if (preprocessing) {
@@ -687,9 +648,15 @@ public class LearningWindow extends ApplicationFrame {
 			averageTestError += currentError(expectedOutput, learningNN.getOutputs());
 		}
 		averageTestError = averageTestError/(totalSourceSize - learningSourceSize);
-		testErrorSeries.add((double) epochNumber, averageTestError);
-		errorSeries.add((double) epochNumber, averageLearningError);
-//		testMistakeSeries.add((double)epochNumber, (double)numberOfTestMistakesPerEpoch*100./(cleanInput.size()-epochSize));	
-//		mistakeSeries.add((double)epochNumber, (double)numberOfMistakesPerEpoch*100./epochSize);
+		averageTestMistakes = (averageTestMistakes)/(totalSourceSize - learningSourceSize);
+		
+		//System.out.println("Test error :" +averageTestError*100 +"Learning Error : " + averageLearningError*100);
+		
+		testErrorSeries.add((double) epochNumber, averageTestError*100);
+		errorSeries.add((double) epochNumber, averageLearningError*100);
+		testMistakeSeries.add((double)epochNumber, averageTestMistakes*100);	
+		mistakeSeries.add((double)epochNumber, averageLearningMistakes*100);
+		
+		return averageTestError*100;
 	}
 }
