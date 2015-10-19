@@ -645,4 +645,51 @@ public class LearningWindow extends ApplicationFrame {
 		return res;
 		
 	}
+
+	private void testLearningNN(int totalSourceSize, int learningSourceSize, List<SourceImage> cleanInput, NeuralNetwork learningNN, boolean preprocessing, int epochNumber){
+		double[] input;
+		int averageTestMistakes =0;
+		int averageLearningMistakes =0;
+		double averageTestError =0;
+		double averageLearningError =0;
+		for(int j = 0 ; j< learningSourceSize ; j++){
+			SourceImage currentImage = cleanInput.get(j);
+			if (preprocessing) {
+				input = currentImage.getRelevantFeatures();
+			} else {
+				input = currentImage.getCleanRawDoubleImage();
+			}
+			learningNN.setInputs(input);
+			learningNN.fire();
+			double[] expectedOutput = currentImage.getExpectedOutput();
+			if(maxIndex(learningNN.getOutputs())!= maxIndex(currentImage.getExpectedOutput())){
+				averageLearningMistakes ++;
+			}
+			
+			averageLearningError += currentError(expectedOutput, learningNN.getOutputs());
+			averageLearningError += currentError(expectedOutput, learningNN.getOutputs());
+		}
+		averageLearningError = averageLearningError/learningSourceSize;
+		for(int j = learningSourceSize ; j<totalSourceSize ; j++){
+			SourceImage currentImage = cleanInput.get(j);
+			if (preprocessing) {
+				input = currentImage.getRelevantFeatures();
+			} else {
+				input = currentImage.getCleanRawDoubleImage();
+			}
+			learningNN.setInputs(input);
+			learningNN.fire();
+			double[] expectedOutput = currentImage.getExpectedOutput();
+			if(maxIndex(learningNN.getOutputs())!= maxIndex(currentImage.getExpectedOutput())){
+				averageTestMistakes ++;
+			}
+			
+			averageTestError += currentError(expectedOutput, learningNN.getOutputs());
+		}
+		averageTestError = averageTestError/(totalSourceSize - learningSourceSize);
+		testErrorSeries.add((double) epochNumber, averageTestError);
+		errorSeries.add((double) epochNumber, averageLearningError);
+//		testMistakeSeries.add((double)epochNumber, (double)numberOfTestMistakesPerEpoch*100./(cleanInput.size()-epochSize));	
+//		mistakeSeries.add((double)epochNumber, (double)numberOfMistakesPerEpoch*100./epochSize);
+	}
 }

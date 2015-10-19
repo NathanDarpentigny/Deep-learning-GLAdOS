@@ -1,4 +1,4 @@
-package gladosCommonConception;
+package gladosPackage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  * @author Laty
  *
  */
-public class IntermediateNeuron extends AbstractNeuron {
+public class HiddenNeuron extends AbstractNeuron {
 	/**
 	 * 
 	 */
@@ -26,7 +26,7 @@ public class IntermediateNeuron extends AbstractNeuron {
 	private double[] varLR; //Contient les taux d'apprentissage des neurones d'inputs pour accelerer la convergence en modifiant les taux d'apprentissage de chaque neurone
 	private boolean[] gradientChangedSign; // Utile pour savoir comment changer les taux d'apprentissage et donc changer varLR
 
-	public IntermediateNeuron(int size, double defaultLR) {
+	public HiddenNeuron(int size, double defaultLR) {
 		weights = new double[size + 1]; // le +1 est ajoute pour prendre en compte le biais
 		this.defaultLR = defaultLR;
 		weightDiffs = new double[size + 1];

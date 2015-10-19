@@ -45,7 +45,7 @@ public class NeuralNetwork implements Serializable {
 		for (int i = 1; i < structure.length - 1; i++) {
 			intermediateLayers.add(new ArrayList<AbstractNeuron>());
 			for (int j = 0; j < structure[i]; j++) {
-				intermediateLayers.get(i - 1).add(new IntermediateNeuron(structure[i - 1],learningRate));
+				intermediateLayers.get(i - 1).add(new HiddenNeuron(structure[i - 1],learningRate));
 			}
 		}
 
@@ -143,21 +143,21 @@ public class NeuralNetwork implements Serializable {
 		}
 
 		for (AbstractNeuron n : intermediateLayers.get(0)) {
-			((IntermediateNeuron) n).setInputNeurons(inputLayer);
+			((HiddenNeuron) n).setInputNeurons(inputLayer);
 		}
 		for (AbstractNeuron n : intermediateLayers.get(intermediateLayers.size() - 1)) {
-			((IntermediateNeuron) n).setOutputNeurons(outputLayer);
+			((HiddenNeuron) n).setOutputNeurons(outputLayer);
 		}
 
 		for (int i = 0; i < intermediateLayers.size() - 1; i++) {
 			for (AbstractNeuron n : intermediateLayers.get(i)) {
-				((IntermediateNeuron) n).setOutputNeurons(intermediateLayers.get(i + 1));
+				((HiddenNeuron) n).setOutputNeurons(intermediateLayers.get(i + 1));
 			}
 		}
 
 		for (int i = 1; i < intermediateLayers.size(); i++) {
 			for (AbstractNeuron n : intermediateLayers.get(i)) {
-				((IntermediateNeuron) n).setInputNeurons(intermediateLayers.get(i - 1));
+				((HiddenNeuron) n).setInputNeurons(intermediateLayers.get(i - 1));
 			}
 		}
 	}

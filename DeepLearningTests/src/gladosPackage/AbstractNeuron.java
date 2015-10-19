@@ -15,7 +15,7 @@ import java.io.Serializable;
 public abstract class AbstractNeuron implements Serializable {
 
 	private double output;
-	private double input;
+	
 	private double neuronDiff;
 	/**
 	 * 
