@@ -51,7 +51,7 @@ public class LearningWindow extends ApplicationFrame {
 	private static final long serialVersionUID = 1L;
 
 	private JTextField txtDefaultLearningRate;
-	private JTextField txtEpochSize;
+	private JTextField txtLearningProportion;
 	private JTextField txtTargetErrorPer;
 	private JTextField txtIncreaseAndDecrease;
 	private JTextField txtMomentumFactor;
@@ -63,6 +63,7 @@ public class LearningWindow extends ApplicationFrame {
 	
 	private ChartPanel graphPanel;
 	private ChartPanel mistakePanel;
+	private JTextField txtEpochSize;
 	// private VisualPanel contentPane;
 	// private static double[] expectedResult = new double[]{0.8,0.4,0.6};
 
@@ -402,6 +403,7 @@ public class LearningWindow extends ApplicationFrame {
 		spinnerLearningProp.setBounds(428, 76, 46, 20);
 		getContentPane().add(spinnerLearningProp);
 		
+		JSpinner spinnerEpochSize = new JSpinner();
 		
 		JSlider sliderLearningProportion = new JSlider();
 		sliderLearningProportion.setMajorTickSpacing(50);
@@ -412,24 +414,40 @@ public class LearningWindow extends ApplicationFrame {
 		
 		spinnerLearningProp.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
+				
 				sliderLearningProportion.setValue((int)((double)spinnerLearningProp.getValue()*100));
+				double learningProp = ((double)spinnerLearningProp.getValue());
+				if((int)spinnerEpochSize.getValue()>(learningProp*60000.)){
+					
+					spinnerEpochSize.setValue((int)((double)spinnerLearningProp.getValue()*60000.));
+				}
+				spinnerEpochSize.setModel(new SpinnerNumberModel((int)spinnerEpochSize.getValue(), 1, (int)(learningProp*60000.), 100));
 			}
 		});
 		
 		sliderLearningProportion.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
+				//System.out.println((int)((double)spinnerLearningProp.getValue()*60000.));
+				
 				spinnerLearningProp.setValue(sliderLearningProportion.getValue()/100.);
+				double learningProp = ((double)spinnerLearningProp.getValue());
+				if((int)spinnerEpochSize.getValue()>(learningProp*60000.)){
+					
+					spinnerEpochSize.setValue((int)(learningProp*60000.));
+				}
+				spinnerEpochSize.setModel(new SpinnerNumberModel((int)spinnerEpochSize.getValue(), 1, (int)(learningProp*60000.), 100));
+				
 			}
 		});
 
-		txtEpochSize = new JTextField();
-		txtEpochSize.setBorder(null);
-		txtEpochSize.setHorizontalAlignment(SwingConstants.TRAILING);
-		txtEpochSize.setEditable(false);
-		txtEpochSize.setText("Learning proportion");
-		txtEpochSize.setBounds(201, 76, 130, 20);
-		getContentPane().add(txtEpochSize);
-		txtEpochSize.setColumns(10);
+		txtLearningProportion = new JTextField();
+		txtLearningProportion.setBorder(null);
+		txtLearningProportion.setHorizontalAlignment(SwingConstants.TRAILING);
+		txtLearningProportion.setEditable(false);
+		txtLearningProportion.setText("Learning proportion");
+		txtLearningProportion.setBounds(201, 76, 130, 20);
+		getContentPane().add(txtLearningProportion);
+		txtLearningProportion.setColumns(10);
 
 		JSpinner spinnerTarget = new JSpinner();
 		spinnerTarget.setModel(new SpinnerNumberModel(new Double(10), new Double(0), new Double(100), new Double(1)));
@@ -464,6 +482,11 @@ public class LearningWindow extends ApplicationFrame {
 		txtMomentumFactor.setBounds(277, 128, 130, 20);
 		getContentPane().add(txtMomentumFactor);
 		txtMomentumFactor.setColumns(10);
+		
+		
+		spinnerEpochSize.setModel(new SpinnerNumberModel(10000, 1, 48000, 100));
+		spinnerEpochSize.setBounds(617, 22, 71, 20);
+		getContentPane().add(spinnerEpochSize);
 
 		JButton btnLaunch = new JButton("Launch Learning Algorithm");
 		btnLaunch.addActionListener(new ActionListener() {
@@ -490,7 +513,21 @@ public class LearningWindow extends ApplicationFrame {
 		getRootPane().setDefaultButton(btnLaunch);
 		getContentPane().add(btnLaunch);
 		
-	
+		txtEpochSize = new JTextField();
+		txtEpochSize.setText("Epoch Size");
+		txtEpochSize.setOpaque(false);
+		txtEpochSize.setHorizontalAlignment(SwingConstants.TRAILING);
+		txtEpochSize.setFocusable(false);
+		txtEpochSize.setEditable(false);
+		txtEpochSize.setColumns(10);
+		txtEpochSize.setBorder(null);
+		txtEpochSize.setBounds(509, 22, 85, 20);
+		getContentPane().add(txtEpochSize);
+		
+		
+		
+		
+		
 		
 	
 		// contentPane.setBackground(Color.ORANGE);
