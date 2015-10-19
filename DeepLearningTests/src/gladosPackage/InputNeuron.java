@@ -9,33 +9,18 @@ import java.util.List;
  * @author Laty
  *
  */
-public class InputNeuron extends AbstractNeuron {
+class InputNeuron extends AbstractNeuron {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -5887349009775758412L;
 	private double input = 0;
-	private double neuronDiff = 0;
-	private double output;
 
 	public InputNeuron() {
 	}
 
 	public void setOutputNeurons(List<AbstractNeuron> outNeurons) {
-	}
-
-	public double getOutput() {
-		return output;
-	}
-
-	public void fire() {
-		output = input;
-
-	}
-
-	public double getNeuronDiff() {
-		return neuronDiff;
 	}
 
 	public void calculateNeuronDiff(double expectedOutput) {
@@ -68,5 +53,23 @@ public class InputNeuron extends AbstractNeuron {
 
 	public void resetLR() {
 
+	}
+
+	@Override
+	public double getOutput() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void fire() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double getNeuronDiff() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

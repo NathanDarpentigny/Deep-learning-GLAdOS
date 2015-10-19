@@ -7,7 +7,7 @@ public abstract class ActivationFunction {
 
 	abstract public double applyDerivative(double x);
 
-	public static ActivationFunction getInstance(){
+	public ActivationFunction getInstance(){
 		return instance;
 	}
 }

@@ -1,7 +1,12 @@
 package gladosCommonConception;
 
-public class Sigmoid extends ActivationFunction {
+public class Sigmoid {
 
+	private static Sigmoid instance = new Sigmoid();
+
+	public static Sigmoid getInstance(){
+		return instance;
+	}
 	
 	public double apply(double x) {	
 		if (x < -45.) {

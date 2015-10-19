@@ -9,7 +9,7 @@ import java.util.List;
  * @author Laty
  *
  */
-public class OutputNeuron extends AbstractNeuron {
+class OutputNeuron extends AbstractNeuron {
 	/**
 	 * 
 	 */

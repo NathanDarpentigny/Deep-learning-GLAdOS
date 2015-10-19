@@ -1,5 +1,6 @@
 package gladosCommonConception;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,58 +16,34 @@ public class InputNeuron extends AbstractNeuron {
 	 * 
 	 */
 	private static final long serialVersionUID = -5887349009775758412L;
-	private double input = 0;
-	private double neuronDiff = 0;
-	private double output;
+	private double input = 0.;
+	private List<Synapse> outputSynapses;
 
 	public InputNeuron() {
+		outputSynapses = new ArrayList<Synapse>();
 	}
 
-	public void setOutputNeurons(List<AbstractNeuron> outNeurons) {
+	public void addOutputSynapse(Synapse syn) {
+		outputSynapses.add(syn);
 	}
 
-	public double getOutput() {
-		return output;
+	public List<Synapse> getOutputSynapses() {
+		return outputSynapses;
 	}
 
+	public void setInput(double x) {
+		input = x;
+	}
+
+	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize){
+		for(AbstractNeuron n : layer){
+			new Synapse(this, n, (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2))/inSize);
+		}
+	}
+	
 	public void fire() {
-		output = input;
+		setOutput(input);
 
 	}
 
-	public double getNeuronDiff() {
-		return neuronDiff;
-	}
-
-	public void calculateNeuronDiff(double expectedOutput) {
-	}
-
-	public void resetWeightDiffs() {
-	}
-
-	public void incrementWeightDiffs() {
-	}
-
-	public void incrementWeights(double learningRate) {
-	}
-
-	public Double getWeight(AbstractNeuron n) {
-		System.out.println("Trying to get input weights from an input neuron");
-		return null;
-	}
-
-	public void setInput(double d) {
-		input = d;
-	}
-
-	public void resetWeightDiffsMomentum(double alphaRate) {
-	}
-
-	public void varyLR(double dummy, double dummy2) {
-
-	}
-
-	public void resetLR() {
-
-	}
 }

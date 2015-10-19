@@ -12,7 +12,7 @@ import java.io.Serializable;
  *
  */
 @SuppressWarnings("unused")
-public abstract class AbstractNeuron implements Serializable {
+abstract class AbstractNeuron implements Serializable {
 
 	private double output;
 	

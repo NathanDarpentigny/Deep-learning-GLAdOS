@@ -29,7 +29,7 @@ import java.awt.event.ActionEvent;
  * @author Laty
  *
  */
-public class TestingWindow extends JFrame{
+class TestingWindow extends JFrame{
 	NeuralNetwork testedNN;
 	boolean nnIsPreprocessed;
 	/**

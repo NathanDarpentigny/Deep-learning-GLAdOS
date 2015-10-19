@@ -30,7 +30,7 @@ import java.awt.event.ActionEvent;
  *
  */
 public class TestingWindow extends JFrame{
-	NeuralNetwork testedNN;
+	Perceptron testedNN;
 	boolean nnIsPreprocessed;
 	/**
 	 * 
@@ -67,7 +67,7 @@ public class TestingWindow extends JFrame{
 	}
 	
 	@SuppressWarnings("unused")
-	private void setNN(NeuralNetwork testedNN) {
+	private void setNN(Perceptron testedNN) {
 		this.testedNN = testedNN;
 		
 	}
@@ -174,7 +174,7 @@ public class TestingWindow extends JFrame{
 					ObjectInputStream in = new ObjectInputStream(fileIn);
 					
 					try {
-						testedNN = (NeuralNetwork) in.readObject();
+						testedNN = (Perceptron) in.readObject();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}

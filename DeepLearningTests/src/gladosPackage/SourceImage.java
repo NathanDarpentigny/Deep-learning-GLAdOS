@@ -10,7 +10,7 @@ import java.util.Arrays;
  * @author Laty
  *
  */
-public class SourceImage implements Serializable {
+class SourceImage implements Serializable {
 	/**
 	 * 
 	 */

@@ -6,11 +6,20 @@ public class Synapse {
 	private double weightDiff;
 	private AbstractNeuron outputNeuron;
 
-	public Synapse(AbstractNeuron in, AbstractNeuron out, double w){
+	public Synapse(AbstractNeuron in, AbstractNeuron out, double w) {
 		weight = w;
-		weightDiff = 0;
+		weightDiff = 0.;
 		inputNeuron = in;
+		if (in instanceof InputNeuron) {
+			((InputNeuron) in).addOutputSynapse(this);
+		} else if (in instanceof IntermediateNeuron) {
+			((IntermediateNeuron) in).addOutputSynapse(this);
+		}
 		outputNeuron = out;
+		if (in instanceof ActiveNeuron) {
+			((ActiveNeuron) out).addInputSynapse(this);
+		}
+
 	}
 
 	/**
@@ -21,7 +30,8 @@ public class Synapse {
 	}
 
 	/**
-	 * @param inputNeuron the inputNeuron to set
+	 * @param inputNeuron
+	 *            the inputNeuron to set
 	 */
 	public void setInputNeuron(AbstractNeuron inputNeuron) {
 		this.inputNeuron = inputNeuron;
@@ -35,7 +45,8 @@ public class Synapse {
 	}
 
 	/**
-	 * @param weight the weight to set
+	 * @param weight
+	 *            the weight to set
 	 */
 	public void setWeight(double weight) {
 		this.weight = weight;
@@ -49,7 +60,8 @@ public class Synapse {
 	}
 
 	/**
-	 * @param weightDiff the weightDiff to set
+	 * @param weightDiff
+	 *            the weightDiff to set
 	 */
 	public void setWeightDiff(double weightDiff) {
 		this.weightDiff = weightDiff;
@@ -63,11 +75,11 @@ public class Synapse {
 	}
 
 	/**
-	 * @param outputNeuron the outputNeuron to set
+	 * @param outputNeuron
+	 *            the outputNeuron to set
 	 */
 	public void setOutputNeuron(AbstractNeuron outputNeuron) {
 		this.outputNeuron = outputNeuron;
 	}
-	
-	
+
 }
