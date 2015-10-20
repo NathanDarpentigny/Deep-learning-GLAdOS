@@ -138,19 +138,19 @@ public class LearningWindow extends ApplicationFrame {
 		int[] currentPermutation;
 		SourceImage currentImage;
 		int epochNumber = 0;
-		
+
 		if (!simple) {
 			int i = 0;
 			// int numberOfMistakesPerEpoch = 0;
 			// int numberOfTestMistakesPerEpoch = 0;
-			Perceptron learningNN;
+			FeedForward learningNN;
 			List<SourceImage> cleanInput;
 			if (preprocessing) {
-				learningNN = new Perceptron(new int[] { 100, 50, 10 }, learningRate);
+				learningNN = new FeedForward(new int[] { 100, 50, 10 }, learningRate);
 				cleanInput = recreateCleanInput(processedFile.getFeatures(), processedFile.getExpectedOutputs());
 				cleanInput = permutateRandomly(cleanInput);
 			} else {
-				learningNN = new Perceptron(new int[] { 28 * 28, 100, 40, 10 }, learningRate);
+				learningNN = new FeedForward(new int[] { 28 * 28, 100, 40, 10 }, learningRate);
 				cleanInput = createCleanInput(rawImagesArray, labelsArray);
 				cleanInput = permutateRandomly(cleanInput);
 			}
@@ -171,17 +171,19 @@ public class LearningWindow extends ApplicationFrame {
 						}
 						learningNN.setInputs(input);
 						learningNN.fire();
+						System.out.println(learningNN.getOutputs());
 						expectedOutput = currentImage.getExpectedOutput();
 						backpropagateNeuronDiff(learningNN, expectedOutput);
-						//learningNN.calculateNeuronDiffs(expectedOutput);
+						// learningNN.calculateNeuronDiffs(expectedOutput);
 						backpropagateWeightDiffs(learningNN);
-						//learningNN.incrementWeightDiffs();
+						// learningNN.incrementWeightDiffs();
 						if (!incrementPerEpoch) {
 							backpropagateWeight(learningNN, learningRate);
-							//learningNN.incrementWeights();
-							//learningNN.resetWeightDiffsMomentum(momentumRate);
+							// learningNN.incrementWeights();
+							// learningNN.resetWeightDiffsMomentum(momentumRate);
 							if (variableLR) {
-								//learningNN.varyLR(decreaseLR_factor, increaseLR_factor);
+								// learningNN.varyLR(decreaseLR_factor,
+								// increaseLR_factor);
 							}
 						}
 					}
@@ -192,8 +194,8 @@ public class LearningWindow extends ApplicationFrame {
 					update(getGraphics());
 					if (incrementPerEpoch) {
 						backpropagateWeight(learningNN, learningRate);
-						//learningNN.incrementWeights();
-						//learningNN.resetWeightDiffsMomentum(momentumRate);
+						// learningNN.incrementWeights();
+						// learningNN.resetWeightDiffsMomentum(momentumRate);
 					}
 
 				}
@@ -239,7 +241,7 @@ public class LearningWindow extends ApplicationFrame {
 		}
 
 		else {
-			Perceptron learningNN = new Perceptron(new int[] { 2, 3, 4, 1 }, learningRate);
+			FeedForward learningNN = new FeedForward(new int[] { 2, 3, 4, 1 }, learningRate);
 			for (int i = 0; i < 10000 / 100; i++) {
 				for (int j = 0; j < 100; j++) {
 					double inputA = Math.floor(Math.random() * 2);
@@ -252,22 +254,20 @@ public class LearningWindow extends ApplicationFrame {
 						expectedOutput = new double[] { inputA + inputB };
 					}
 					backpropagateNeuronDiff(learningNN, expectedOutput);
-					//learningNN.calculateNeuronDiffs(expectedOutput);
-					//learningNN.incrementWeightDiffs();
+					// learningNN.calculateNeuronDiffs(expectedOutput);
+					// learningNN.incrementWeightDiffs();
 					backpropagateWeightDiffs(learningNN);
-					//learningNN.incrementWeights();
+					// learningNN.incrementWeights();
 					backpropagateWeight(learningNN, learningRate);
-					//learningNN.resetWeightDiffsMomentum(momentumRate);
+					// learningNN.resetWeightDiffsMomentum(momentumRate);
 					averageErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
 				}
 				epochNumber++;
 
-				errorSeries.add((double) epochNumber, averageErrorPerEpoch * 100);
-
-				XYSeriesCollection errorData = new XYSeriesCollection(errorSeries);
-				JFreeChart chart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)",
-						"Epoch number", "Average quadratic error (%)", errorData);
-				graphPanel.setChart(chart);
+				
+//				averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
+//						preprocessing, epochNumber);
+				update(getGraphics());
 				update(getGraphics());
 				revalidate();
 				// learningNN.incrementWeights();
@@ -280,7 +280,7 @@ public class LearningWindow extends ApplicationFrame {
 		}
 	}
 
-	private void backpropagateNeuronDiff(Perceptron learningNN, double[] expectedOutput) {
+	private void backpropagateNeuronDiff(FeedForward learningNN, double[] expectedOutput) {
 		int c = 0;
 		for (AbstractNeuron n : learningNN.getOutputLayer()) {
 			n.setNeuronDiff(Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue())
@@ -290,29 +290,30 @@ public class LearningWindow extends ApplicationFrame {
 		for (int i = learningNN.getIntermediateLayers().size() - 1; i >= 0; i--) {
 			for (AbstractNeuron n : learningNN.getIntermediateLayers().get(i)) {
 				double temp = 0;
-				for(Synapse s : ((IntermediateNeuron) n).getOutputSynapses()){
-					temp += s.getWeight()*s.getOutputNeuron().getNeuronDiff();
+				for (Synapse s : ((IntermediateNeuron) n).getOutputSynapses()) {
+					temp += s.getWeight() * s.getOutputNeuron().getNeuronDiff();
 				}
-				n.setNeuronDiff(Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue())*temp);
+				n.setNeuronDiff(
+						Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue()) * temp);
 			}
 		}
 	}
-	
-	private void backpropagateWeightDiffs(Perceptron learningNN){
-		for(Synapse s : learningNN.getAllSynapses()){
-			s.setWeightDiff(s.getWeightDiff()+(s.getInputNeuron().getOutput()*s.getOutputNeuron().getNeuronDiff()));
+
+	private void backpropagateWeightDiffs(FeedForward learningNN) {
+		for (Synapse s : learningNN.getAllSynapses()) {
+			s.setWeightDiff(s.getWeightDiff() + (s.getInputNeuron().getOutput() * s.getOutputNeuron().getNeuronDiff()));
 		}
-		for(AbstractNeuron n : learningNN.getAllActiveNeurons()){
-			((ActiveNeuron) n).setBiasDiff(((ActiveNeuron) n).getBiasDiff()+n.getNeuronDiff());
+		for (AbstractNeuron n : learningNN.getAllActiveNeurons()) {
+			((ActiveNeuron) n).setBiasDiff(((ActiveNeuron) n).getBiasDiff() + n.getNeuronDiff());
 		}
 	}
-	
-	private void backpropagateWeight(Perceptron learningNN,double learningRate){
-		for(Synapse s : learningNN.getAllSynapses()){
-			s.setWeight(s.getWeight()+s.getWeightDiff()*learningRate);
+
+	private void backpropagateWeight(FeedForward learningNN, double learningRate) {
+		for (Synapse s : learningNN.getAllSynapses()) {
+			s.setWeight(s.getWeight() + s.getWeightDiff() * learningRate);
 		}
-		for(AbstractNeuron n : learningNN.getAllActiveNeurons()){
-			((ActiveNeuron) n).setBias(((ActiveNeuron) n).getBias()+learningRate*((ActiveNeuron) n).getBiasDiff());
+		for (AbstractNeuron n : learningNN.getAllActiveNeurons()) {
+			((ActiveNeuron) n).setBias(((ActiveNeuron) n).getBias() + learningRate * ((ActiveNeuron) n).getBiasDiff());
 		}
 	}
 

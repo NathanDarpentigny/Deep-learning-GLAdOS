@@ -31,7 +31,7 @@ public abstract class ActiveNeuron extends AbstractNeuron {
 	public abstract void resetWeightDiffsMomentum(double alphaRate);
 
 	public void fire() {
-		double res = 0;
+		double res = bias;
 		for(Synapse s : getInputSynapse()){
 			res+=s.getWeight()*s.getInputNeuron().getOutput();
 		}

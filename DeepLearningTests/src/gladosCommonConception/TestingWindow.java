@@ -30,7 +30,7 @@ import java.awt.event.ActionEvent;
  *
  */
 public class TestingWindow extends JFrame{
-	Perceptron testedNN;
+	FeedForward testedNN;
 	boolean nnIsPreprocessed;
 	/**
 	 * 
@@ -67,7 +67,7 @@ public class TestingWindow extends JFrame{
 	}
 	
 	@SuppressWarnings("unused")
-	private void setNN(Perceptron testedNN) {
+	private void setNN(FeedForward testedNN) {
 		this.testedNN = testedNN;
 		
 	}
@@ -174,7 +174,7 @@ public class TestingWindow extends JFrame{
 					ObjectInputStream in = new ObjectInputStream(fileIn);
 					
 					try {
-						testedNN = (Perceptron) in.readObject();
+						testedNN = (FeedForward) in.readObject();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}

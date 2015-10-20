@@ -5,7 +5,7 @@ import java.util.List;
 
 
 
-public class Perceptron extends NeuralNetwork {
+public class FeedForward extends NeuralNetwork {
 
 	/**
 	 * 
@@ -20,7 +20,7 @@ public class Perceptron extends NeuralNetwork {
 	//private double learningRate;
 	
 	
-	public Perceptron(int[] structure, double learningRate){
+	public FeedForward(int[] structure, double learningRate){
 		//this.learningRate = learningRate;
 		if (structure.length < 2) {
 			System.out.println("Please enter a structure with more than 2 layers");
