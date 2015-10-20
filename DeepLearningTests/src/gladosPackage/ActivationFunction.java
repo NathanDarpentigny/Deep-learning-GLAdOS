@@ -1,6 +1,6 @@
 package gladosPackage;
 
-abstract class ActivationFunction {
+public abstract class ActivationFunction {
 	private static ActivationFunction instance;
 	
 	abstract public double apply(double x);

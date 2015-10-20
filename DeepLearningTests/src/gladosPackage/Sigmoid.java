@@ -1,6 +1,6 @@
 package gladosPackage;
 
-class Sigmoid extends ActivationFunction {
+public class Sigmoid extends ActivationFunction {
 
 	
 	public double apply(double x) {	

@@ -18,7 +18,7 @@ import javax.swing.JPanel;
  * @author Laty
  *
  */
-class ImageDisplayPanel extends JPanel {
+public class ImageDisplayPanel extends JPanel {
 
 	private int[][] imageMatrix = new int[28][28];
 

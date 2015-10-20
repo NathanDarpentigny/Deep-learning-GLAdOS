@@ -46,7 +46,7 @@ import javax.swing.event.ChangeEvent;
  * @author Laty
  *
  */
-class LearningWindow extends ApplicationFrame {
+public class LearningWindow extends ApplicationFrame {
 
 	private static final long serialVersionUID = 1L;
 
