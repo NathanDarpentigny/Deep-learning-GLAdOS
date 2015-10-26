@@ -180,7 +180,7 @@ public class LearningWindow extends ApplicationFrame {
 						// learningNN.incrementWeightDiffs();
 						if (!incrementPerEpoch) {
 							backpropagateWeight(learningNN, learningRate);
-							resestWeightDiffs(learningNN);
+							resestWeightDiffs(learningNN,momentumRate);
 							// learningNN.incrementWeights();
 							// learningNN.resetWeightDiffsMomentum(momentumRate);
 							if (variableLR) {
@@ -196,7 +196,7 @@ public class LearningWindow extends ApplicationFrame {
 					update(getGraphics());
 					if (incrementPerEpoch) {
 						backpropagateWeight(learningNN, learningRate);
-						resestWeightDiffs(learningNN);
+						resestWeightDiffs(learningNN,momentumRate);
 						// learningNN.incrementWeights();
 						// learningNN.resetWeightDiffsMomentum(momentumRate);
 					}
@@ -321,12 +321,12 @@ public class LearningWindow extends ApplicationFrame {
 		}
 	}
 
-	private void resestWeightDiffs(FeedForward learningNN) {
+	private void resestWeightDiffs(FeedForward learningNN, double momentumRate) {
 		for (Synapse s : learningNN.getAllSynapses()) {
-			s.setWeightDiff(0);
+			s.setWeightDiff(s.getWeightDiff()*momentumRate);
 		}
 		for (AbstractNeuron n : learningNN.getAllActiveNeurons()) {
-			((ActiveNeuron) n).setBiasDiff(0);
+			((ActiveNeuron) n).setBiasDiff(((ActiveNeuron)n).getBiasDiff()*momentumRate);
 		}
 	}
 
@@ -737,7 +737,7 @@ public class LearningWindow extends ApplicationFrame {
 
 		// System.out.println("Test error :" +averageTestError*100 +"Learning
 		// Error : " + averageLearningError*100);
-
+		
 		testErrorSeries.add((double) epochNumber, averageTestError * 100);
 		errorSeries.add((double) epochNumber, averageLearningError * 100);
 		testMistakeSeries.add((double) epochNumber, averageTestMistakes * 100);
