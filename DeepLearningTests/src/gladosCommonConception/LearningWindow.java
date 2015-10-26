@@ -128,6 +128,7 @@ public class LearningWindow extends ApplicationFrame {
 			e.printStackTrace();
 		}
 
+		@SuppressWarnings("unused")
 		double averageErrorPerEpoch = Double.MAX_VALUE;
 		// double lastAverageEpochError = Double.MAX_VALUE;
 		double averageTestErrorPerEpoch = Double.MAX_VALUE;
@@ -264,11 +265,11 @@ public class LearningWindow extends ApplicationFrame {
 				}
 				epochNumber++;
 
-				
-//				averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
-//						preprocessing, epochNumber);
+				// averageTestErrorPerEpoch = testLearningNN(cleanInput.size(),
+				// learningSize, cleanInput, learningNN,
+				// preprocessing, epochNumber);
 				update(getGraphics());
-				update(getGraphics());
+
 				revalidate();
 				// learningNN.incrementWeights();
 				// //learningNN.resetWeightDiffs();
@@ -283,8 +284,9 @@ public class LearningWindow extends ApplicationFrame {
 	private void backpropagateNeuronDiff(FeedForward learningNN, double[] expectedOutput) {
 		int c = 0;
 		for (AbstractNeuron n : learningNN.getOutputLayer()) {
-			n.setNeuronDiff(Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue())
-					* (expectedOutput[c] - n.getOutput()));
+			n.setNeuronDiff(
+					Sigmoid.getInstance().applyDerivative(Sigmoid.getInstance().inverse(((ActiveNeuron) n).getOutput()))
+							* (expectedOutput[c] - n.getOutput()));
 			c++;
 		}
 		for (int i = learningNN.getIntermediateLayers().size() - 1; i >= 0; i--) {
@@ -293,8 +295,8 @@ public class LearningWindow extends ApplicationFrame {
 				for (Synapse s : ((IntermediateNeuron) n).getOutputSynapses()) {
 					temp += s.getWeight() * s.getOutputNeuron().getNeuronDiff();
 				}
-				n.setNeuronDiff(
-						Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue()) * temp);
+				n.setNeuronDiff(Sigmoid.getInstance()
+						.applyDerivative(Sigmoid.getInstance().inverse(((ActiveNeuron) n).getOutput())) * temp);
 			}
 		}
 	}

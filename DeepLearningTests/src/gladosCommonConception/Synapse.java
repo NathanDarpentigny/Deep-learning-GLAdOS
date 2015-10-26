@@ -16,7 +16,7 @@ public class Synapse {
 			((IntermediateNeuron) in).addOutputSynapse(this);
 		}
 		outputNeuron = out;
-		if (in instanceof ActiveNeuron) {
+		if (out instanceof ActiveNeuron) {
 			((ActiveNeuron) out).addInputSynapse(this);
 		}
 

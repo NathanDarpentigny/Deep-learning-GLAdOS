@@ -32,18 +32,18 @@ public abstract class ActiveNeuron extends AbstractNeuron {
 
 	public void fire() {
 		double res = bias;
-		for(Synapse s : getInputSynapse()){
+		for(Synapse s : getInputSynapses()){
 			res+=s.getWeight()*s.getInputNeuron().getOutput();
 		}
 		intermediateValue = res;
-		setOutput(Sigmoid.getInstance().apply(res)); //TODO : use activation functions
+		setOutput(Sigmoid.getInstance().apply(res)); 
 	}
 	
 	public void addInputSynapse(Synapse syn) {
 		inputSynapses.add(syn);
 	}
 
-	public List<Synapse> getInputSynapse() {
+	public List<Synapse> getInputSynapses() {
 		return inputSynapses;
 	}
 

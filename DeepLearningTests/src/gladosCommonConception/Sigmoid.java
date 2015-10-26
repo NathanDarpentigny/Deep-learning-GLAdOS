@@ -23,4 +23,8 @@ public class Sigmoid {
 		return apply(x)*(1-apply(x));
 	}
 
+	public double inverse(double y){
+		return -(Math.log(1/y-1));
+	}
+	
 }
