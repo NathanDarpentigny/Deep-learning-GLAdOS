@@ -65,6 +65,9 @@ public class LearningWindow extends ApplicationFrame {
 	private ChartPanel mistakePanel;
 	private JTextField txtEpochSize;
 	private JTextField txtRefreshRate;
+	private JTextField txtNumberOfSamples;
+	private JTextField txtNumberOfAlgorithm;
+	private JTextField iterationTxt;
 
 	public static void main(String[] args) {
 		try {
@@ -79,6 +82,213 @@ public class LearningWindow extends ApplicationFrame {
 			e.printStackTrace();
 		}
 		new LearningWindow("Test");
+	}
+
+	public void massLearningAlg(boolean simple, boolean variableLR, boolean preprocessing, boolean incrementPerEpoch,
+			double defaultLR, double decreaseLR_factor, double increaseLR_factor, double momentumRate,
+			double learningProportion, int targetSampleNumber, int epochSize, int refreshSize, int iterationNumber) {
+		
+		Path trainImages = FileSystems.getDefault().getPath("src/filesMNIST", "train-images.idx3-ubyte");
+		Path trainLabels = FileSystems.getDefault().getPath("src/filesMNIST", "train-labels.idx1-ubyte");
+		Preprocessing processedFile = null;
+		if (preprocessing) {
+			processedFile = new Preprocessing();
+		}
+		byte[] rawImagesArray = null;
+		byte[] labelsArray = null;
+		if(!preprocessing){
+			try {
+				rawImagesArray = Files.readAllBytes(trainImages);
+				labelsArray = Files.readAllBytes(trainLabels);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+
+		@SuppressWarnings("unused")
+		double averageErrorPerEpoch = Double.MAX_VALUE;
+		// double lastAverageEpochError = Double.MAX_VALUE;
+		double averageTestErrorPerEpoch = Double.MAX_VALUE;
+		double learningRate = defaultLR;
+		double[] expectedOutput = null;
+		double[] input;
+
+		int[] currentPermutation;
+		SourceImage currentImage;
+		int sampleNumber = 0;
+		Output out = new Output();
+
+		if (!simple) {
+			// int i = 0;
+			// int numberOfMistakesPerEpoch = 0;
+			// int numberOfTestMistakesPerEpoch = 0;
+			for(int k = 0; k< iterationNumber ;k++){
+				iterationTxt.setText((k+1)+" / " + iterationNumber);
+				FeedForward learningNN;
+				List<SourceImage> cleanInput;
+				if (preprocessing) {
+					learningNN = new FeedForward(new int[] { 100, 50, 10 }, learningRate);
+					cleanInput = recreateCleanInput(processedFile.getFeatures(), processedFile.getExpectedOutputs());
+					cleanInput = permutateRandomly(cleanInput);
+				} else {
+					learningNN = new FeedForward(new int[] { 28 * 28, 100, 40, 10 }, learningRate);
+					cleanInput = createCleanInput(rawImagesArray, labelsArray);
+					cleanInput = permutateRandomly(cleanInput);
+				}
+				int refreshCounter = 0;
+				int epochCounter = 0;
+				int rawNumber = 0;
+				sampleNumber = 0;
+				while (sampleNumber < targetSampleNumber) {
+					int learningSize = (int) (cleanInput.size() * learningProportion);
+					currentPermutation = getRandomPermutation(learningSize);
+					currentImage = cleanInput.get(currentPermutation[rawNumber]);
+	
+					if (preprocessing) {
+						input = currentImage.getRelevantFeatures();
+					} else {
+						input = currentImage.getCleanRawDoubleImage();
+					}
+					learnOneInput(learningNN, input, incrementPerEpoch, momentumRate, learningRate, currentImage,
+							variableLR);
+	
+					if (refreshCounter == refreshSize - 1||(sampleNumber == 0 && rawNumber == 0)) {
+						averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
+								preprocessing, sampleNumber, refreshSize, out);
+						sampleNumber++;
+						update(getGraphics());
+						refreshCounter = 0;
+					}
+	
+					if (epochCounter == epochSize - 1) {
+						if (!incrementPerEpoch) {
+	
+						}
+						currentPermutation = getRandomPermutation(learningSize);
+						rawNumber = 0;
+					}
+					if (rawNumber == learningSize - 1) {
+						rawNumber = 0;
+						currentPermutation = getRandomPermutation(learningSize);
+					}
+					refreshCounter++;
+					epochCounter++;
+					rawNumber++;
+	
+					// for (int j = 0; j < learningSize / epochSize; j++) {
+					// for (int c = 0; c < epochSize; c++) {
+					// i = currentPermutation[j * epochSize + c];
+					// // System.out.println(j*epochSize+c);
+					// currentImage = cleanInput.get(i);
+					// if (preprocessing) {
+					// input = currentImage.getRelevantFeatures();
+					// } else {
+					// input = currentImage.getCleanRawDoubleImage();
+					// }
+					// learnOneInput(learningNN,input,incrementPerEpoch,momentumRate,learningRate,currentImage,variableLR);
+					//
+					// }
+					// // System.out.println("Epoch over");
+					// sampleNumber++;
+					// averageTestErrorPerEpoch = testLearningNN(cleanInput.size(),
+					// learningSize, cleanInput, learningNN,
+					// preprocessing, sampleNumber);
+					// update(getGraphics());
+					// if (incrementPerEpoch) {
+					// backpropagateWeight(learningNN, learningRate);
+					// resestWeightDiffs(learningNN, momentumRate);
+					// // learningNN.incrementWeights();
+					// // learningNN.resetWeightDiffsMomentum(momentumRate);
+					// }
+					// // System.out.println("Epoch start");
+					//
+					// }
+				}
+				mistakeSeries.clear();
+				errorSeries.clear();
+				testMistakeSeries.clear();
+				testErrorSeries.clear();
+				
+				update(getGraphics());
+				revalidate();
+		   	}
+			JFileChooser chooser = new JFileChooser(".");
+
+			int returnVal = chooser.showSaveDialog(this);
+
+			try {
+				if (returnVal == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+//					FileOutputStream fileOut;
+					if (preprocessing) {
+						if (chooser.getSelectedFile().getPath().endsWith(".pre")) {
+//							fileOut = new FileOutputStream(chooser.getSelectedFile().getPath());
+							out.generateCsvFile((chooser.getSelectedFile().getPath()).substring(0,
+									(chooser.getSelectedFile().getPath()).length() - 4));
+						} else {
+//							fileOut = new FileOutputStream(chooser.getSelectedFile().getPath() + ".pre");
+							out.generateCsvFile(chooser.getSelectedFile().getPath());
+						}
+
+					} else {
+						if (chooser.getSelectedFile().getPath().endsWith(".rw")) {
+//							fileOut = new FileOutputStream("resultingNN/" + chooser.getSelectedFile().getPath());
+						} else {
+//							fileOut = new FileOutputStream(
+//									"resultingNN/" + chooser.getSelectedFile().getPath() + ".rw");
+						}
+					}
+//					ObjectOutputStream outStream = new ObjectOutputStream(fileOut);
+//					outStream.writeObject(learningNN);
+//					outStream.close();
+//					fileOut.close();
+				}
+
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
+			this.dispose();
+		}
+
+		else {
+			FeedForward learningNN = new FeedForward(new int[] { 2, 3, 4, 1 }, learningRate);
+			for (int i = 0; i < 10000 / 100; i++) {
+				for (int j = 0; j < 100; j++) {
+					double inputA = Math.floor(Math.random() * 2);
+					double inputB = Math.floor(Math.random() * 2);
+					learningNN.setInputs(new double[] { inputA, inputB });
+					learningNN.fire();
+					if (inputA == inputB) {
+						expectedOutput = new double[] { inputA };
+					} else {
+						expectedOutput = new double[] { inputA + inputB };
+					}
+					backpropagateNeuronDiff(learningNN, expectedOutput);
+					// learningNN.calculateNeuronDiffs(expectedOutput);
+					// learningNN.incrementWeightDiffs();
+					backpropagateWeightDiffs(learningNN);
+					// learningNN.incrementWeights();
+					backpropagateWeight(learningNN, learningRate);
+					// learningNN.resetWeightDiffsMomentum(momentumRate);
+					averageErrorPerEpoch += currentError(expectedOutput, learningNN.getOutputs());
+				}
+				sampleNumber++;
+
+				// averageTestErrorPerEpoch = testLearningNN(cleanInput.size(),
+				// learningSize, cleanInput, learningNN,
+				// preprocessing, epochNumber);
+				update(getGraphics());
+
+				revalidate();
+				// learningNN.incrementWeights();
+				// //learningNN.resetWeightDiffs();
+				// learningNN.resetWeightDiffsMomentum(MOMENTUM_RATE);
+
+				averageErrorPerEpoch = 0.;
+
+			}
+		}
 	}
 
 	/**
@@ -119,12 +329,15 @@ public class LearningWindow extends ApplicationFrame {
 		}
 		byte[] rawImagesArray = null;
 		byte[] labelsArray = null;
-		try {
-			rawImagesArray = Files.readAllBytes(trainImages);
-			labelsArray = Files.readAllBytes(trainLabels);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!preprocessing){
+			try {
+				rawImagesArray = Files.readAllBytes(trainImages);
+				labelsArray = Files.readAllBytes(trainLabels);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
+		
 
 		@SuppressWarnings("unused")
 		double averageErrorPerEpoch = Double.MAX_VALUE;
@@ -170,10 +383,10 @@ public class LearningWindow extends ApplicationFrame {
 				learnOneInput(learningNN, input, incrementPerEpoch, momentumRate, learningRate, currentImage,
 						variableLR);
 
-				if (refreshCounter == refreshSize - 1) {
-					sampleNumber++;
+				if (refreshCounter == refreshSize - 1||(sampleNumber == 0 && rawNumber == 0)) {
 					averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
 							preprocessing, sampleNumber, refreshSize, out);
+					sampleNumber++;
 					update(getGraphics());
 					refreshCounter = 0;
 				}
@@ -185,7 +398,7 @@ public class LearningWindow extends ApplicationFrame {
 					currentPermutation = getRandomPermutation(learningSize);
 					rawNumber = 0;
 				}
-				if(rawNumber == learningSize-1){
+				if (rawNumber == learningSize - 1) {
 					rawNumber = 0;
 					currentPermutation = getRandomPermutation(learningSize);
 				}
@@ -222,7 +435,7 @@ public class LearningWindow extends ApplicationFrame {
 				//
 				// }
 			}
-
+			
 			update(getGraphics());
 			revalidate();
 
@@ -239,8 +452,7 @@ public class LearningWindow extends ApplicationFrame {
 							out.generateCsvFile((chooser.getSelectedFile().getPath()).substring(0,
 									(chooser.getSelectedFile().getPath()).length() - 4));
 						} else {
-							fileOut = new FileOutputStream(
-									chooser.getSelectedFile().getPath() + ".pre");
+							fileOut = new FileOutputStream(chooser.getSelectedFile().getPath() + ".pre");
 							out.generateCsvFile(chooser.getSelectedFile().getPath());
 						}
 
@@ -401,7 +613,7 @@ public class LearningWindow extends ApplicationFrame {
 
 		XYSeriesCollection errorData = new XYSeriesCollection(errorSeries);
 		XYSeriesCollection testErrorData = new XYSeriesCollection(testErrorSeries);
-		JFreeChart errorChart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Epoch number",
+		JFreeChart errorChart = ChartFactory.createXYLineChart("Average quadratic error per epoch (%)", "Sample number",
 				"Average quadratic error (%)", errorData);
 		errorChart.getXYPlot().setDataset(0, errorData);
 		errorChart.getXYPlot().setDataset(1, testErrorData);
@@ -415,7 +627,7 @@ public class LearningWindow extends ApplicationFrame {
 
 		XYSeriesCollection mistakeData = new XYSeriesCollection(mistakeSeries);
 		XYSeriesCollection testMistakeData = new XYSeriesCollection(testMistakeSeries);
-		JFreeChart mistakeChart = ChartFactory.createXYLineChart("Mistakes per epoch (%)", "Epoch number",
+		JFreeChart mistakeChart = ChartFactory.createXYLineChart("Mistakes per epoch (%)", "Sample number",
 				"Mistakes per epoch (%)", mistakeData);
 		mistakeChart.getXYPlot().setDataset(0, mistakeData);
 		mistakeChart.getXYPlot().setDataset(1, testMistakeData);
@@ -428,12 +640,12 @@ public class LearningWindow extends ApplicationFrame {
 
 		JRadioButton rdbtnPreprocessing = new JRadioButton("Preprocessing");
 		rdbtnPreprocessing.setSelected(true);
-		rdbtnPreprocessing.setBounds(10, 49, 139, 23);
+		rdbtnPreprocessing.setBounds(10, 75, 139, 23);
 		getContentPane().add(rdbtnPreprocessing);
 
 		JRadioButton rdbtnIncrementEveryTime = new JRadioButton("Increment every time");
 		rdbtnIncrementEveryTime.setSelected(true);
-		rdbtnIncrementEveryTime.setBounds(10, 75, 139, 23);
+		rdbtnIncrementEveryTime.setBounds(10, 127, 139, 23);
 		getContentPane().add(rdbtnIncrementEveryTime);
 
 		JSpinner spinnerDecreaseLR = new JSpinner();
@@ -461,31 +673,19 @@ public class LearningWindow extends ApplicationFrame {
 
 		JSpinner spinnerMomentumFact = new JSpinner();
 		spinnerMomentumFact.setModel(new SpinnerNumberModel(0.4, 0.0, 1.0, .1));
-		spinnerMomentumFact.setBounds(417, 128, 57, 20);
+		spinnerMomentumFact.setBounds(417, 50, 57, 20);
 		getContentPane().add(spinnerMomentumFact);
-
-		JRadioButton rdbtnMomentum = new JRadioButton("Momentum");
-		rdbtnMomentum.setSelected(true);
-		rdbtnMomentum.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				txtMomentumFactor.setEnabled(rdbtnMomentum.isSelected());
-				spinnerMomentumFact.setEnabled(rdbtnMomentum.isSelected());
-			}
-		});
-		rdbtnMomentum.setBounds(10, 127, 109, 23);
-		getContentPane().add(rdbtnMomentum);
 
 		JSpinner spinnerLR = new JSpinner();
 		spinnerLR.setModel(new SpinnerNumberModel(0.005, 0.0, 1.0, 0.001));
-		spinnerLR.setBounds(389, 50, 85, 20);
+		spinnerLR.setBounds(131, 48, 71, 20);
 		getContentPane().add(spinnerLR);
 
 		txtDefaultLearningRate = new JTextField();
 		txtDefaultLearningRate.setBorder(null);
-		txtDefaultLearningRate.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtDefaultLearningRate.setEditable(false);
 		txtDefaultLearningRate.setText("Default learning rate");
-		txtDefaultLearningRate.setBounds(249, 50, 130, 20);
+		txtDefaultLearningRate.setBounds(20, 48, 101, 20);
 		getContentPane().add(txtDefaultLearningRate);
 		txtDefaultLearningRate.setColumns(10);
 
@@ -499,7 +699,7 @@ public class LearningWindow extends ApplicationFrame {
 
 		JSpinner spinnerRefreshRate = new JSpinner();
 		spinnerRefreshRate.setModel(new SpinnerNumberModel(new Integer(5000), new Integer(1), null, new Integer(100)));
-		spinnerRefreshRate.setBounds(617, 50, 71, 20);
+		spinnerRefreshRate.setBounds(403, 128, 71, 20);
 		getContentPane().add(spinnerRefreshRate);
 
 		JSlider sliderLearningProportion = new JSlider();
@@ -517,8 +717,8 @@ public class LearningWindow extends ApplicationFrame {
 				if ((int) spinnerEpochSize.getValue() > (learningProp * 60000.)) {
 					spinnerEpochSize.setValue((int) ((double) spinnerLearningProp.getValue() * 60000.));
 				}
-				if ((int) spinnerRefreshRate.getValue() > (learningProp * 60000.)) {
-					spinnerRefreshRate.setValue((int) ((double) spinnerRefreshRate.getValue() * 60000.));
+				if ((int) spinnerRefreshRate.getValue() > ((double) learningProp * 60000.)) {
+					spinnerRefreshRate.setValue((int) (double) spinnerLearningProp.getValue() * 60000.);
 				}
 				spinnerEpochSize.setModel(new SpinnerNumberModel((int) spinnerEpochSize.getValue(), 1,
 						(int) (learningProp * 60000.), 100));
@@ -536,8 +736,8 @@ public class LearningWindow extends ApplicationFrame {
 				if ((int) spinnerEpochSize.getValue() > (learningProp * 60000.)) {
 					spinnerEpochSize.setValue((int) ((double) spinnerLearningProp.getValue() * 60000.));
 				}
-				if ((int) spinnerRefreshRate.getValue() > (learningProp * 60000.)) {
-					spinnerRefreshRate.setValue((int) ((double) spinnerRefreshRate.getValue() * 60000.));
+				if ((int) spinnerRefreshRate.getValue() > ((double) learningProp * 60000)) {
+					spinnerRefreshRate.setValue((int) ((double) spinnerLearningProp.getValue() * 60000.));
 				}
 				spinnerEpochSize.setModel(new SpinnerNumberModel((int) spinnerEpochSize.getValue(), 1,
 						(int) (learningProp * 60000.), 100));
@@ -583,37 +783,28 @@ public class LearningWindow extends ApplicationFrame {
 
 		txtMomentumFactor = new JTextField();
 		txtMomentumFactor.setBorder(null);
-		txtMomentumFactor.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtMomentumFactor.setEditable(false);
 		txtMomentumFactor.setText("Momentum factor");
-		txtMomentumFactor.setBounds(277, 128, 130, 20);
+		txtMomentumFactor.setBounds(322, 50, 85, 20);
 		getContentPane().add(txtMomentumFactor);
 		txtMomentumFactor.setColumns(10);
 
 		spinnerEpochSize.setModel(new SpinnerNumberModel(10000, 1, 48000, 100));
-		spinnerEpochSize.setBounds(617, 22, 71, 20);
+		spinnerEpochSize.setBounds(239, 128, 71, 20);
 		getContentPane().add(spinnerEpochSize);
 
 		JButton btnLaunch = new JButton("Launch Learning Algorithm");
 		btnLaunch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+			
 				btnLaunch.setEnabled(false);
-				if (rdbtnMomentum.isSelected()) {
-					learningAlg((simpleBox.getSelectedIndex() == 1), rdbtnAdaptableLearningRate.isSelected(),
-							rdbtnPreprocessing.isSelected(), !rdbtnIncrementEveryTime.isSelected(),
-							(double) spinnerLR.getValue(), (double) spinnerDecreaseLR.getValue(),
-							(double) spinnerIncreaseLR.getValue(), (double) spinnerMomentumFact.getValue(),
-							(double) spinnerLearningProp.getValue(), (double) spinnerTarget.getValue(),
-							(int) spinnerEpochSize.getValue(), (int) spinnerRefreshRate.getValue());
-				} else {
-					learningAlg((simpleBox.getSelectedIndex() == 1), rdbtnAdaptableLearningRate.isSelected(),
-							rdbtnPreprocessing.isSelected(), !rdbtnIncrementEveryTime.isSelected(),
-							(double) spinnerLR.getValue(), (double) spinnerDecreaseLR.getValue(),
-							(double) spinnerIncreaseLR.getValue(), 0., (double) spinnerLearningProp.getValue(),
-							(double) spinnerTarget.getValue(), (int) spinnerEpochSize.getValue(),
-							(int) spinnerRefreshRate.getValue());
-				}
+
+				learningAlg((simpleBox.getSelectedIndex() == 1), rdbtnAdaptableLearningRate.isSelected(),
+						rdbtnPreprocessing.isSelected(), !rdbtnIncrementEveryTime.isSelected(),
+						(double) spinnerLR.getValue(), (double) spinnerDecreaseLR.getValue(),
+						(double) spinnerIncreaseLR.getValue(), (double) spinnerMomentumFact.getValue(),
+						(double) spinnerLearningProp.getValue(), (double) spinnerTarget.getValue(),
+						(int) spinnerEpochSize.getValue(), (int) spinnerRefreshRate.getValue());
 
 			}
 		});
@@ -629,20 +820,83 @@ public class LearningWindow extends ApplicationFrame {
 		txtEpochSize.setEditable(false);
 		txtEpochSize.setColumns(10);
 		txtEpochSize.setBorder(null);
-		txtEpochSize.setBounds(509, 22, 85, 20);
+		txtEpochSize.setBounds(144, 128, 85, 20);
 		getContentPane().add(txtEpochSize);
 
 		txtRefreshRate = new JTextField();
-		txtRefreshRate.setText("Refresh Rate");
+		txtRefreshRate.setText("Sample Size");
 		txtRefreshRate.setOpaque(false);
 		txtRefreshRate.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtRefreshRate.setFocusable(false);
 		txtRefreshRate.setEditable(false);
 		txtRefreshRate.setColumns(10);
 		txtRefreshRate.setBorder(null);
-		txtRefreshRate.setBounds(509, 50, 85, 20);
+		txtRefreshRate.setBounds(309, 127, 85, 20);
 		getContentPane().add(txtRefreshRate);
 
+		
+
+		JSpinner spinnerNumberOfSamples = new JSpinner();
+		spinnerNumberOfSamples.setModel(new SpinnerNumberModel(new Integer(40), new Integer(1), null, new Integer(1)));
+		spinnerNumberOfSamples.setBounds(923, 22, 50, 20);
+		getContentPane().add(spinnerNumberOfSamples);
+
+		txtNumberOfSamples = new JTextField();
+		txtNumberOfSamples.setText("Number of samples per algorithm");
+		txtNumberOfSamples.setOpaque(false);
+		txtNumberOfSamples.setHorizontalAlignment(SwingConstants.TRAILING);
+		txtNumberOfSamples.setFocusable(false);
+		txtNumberOfSamples.setEditable(false);
+		txtNumberOfSamples.setColumns(10);
+		txtNumberOfSamples.setBorder(null);
+		txtNumberOfSamples.setBounds(743, 22, 170, 20);
+		getContentPane().add(txtNumberOfSamples);
+
+		JSpinner spinnerNumberOfAlg = new JSpinner();
+		spinnerNumberOfAlg.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
+		spinnerNumberOfAlg.setBounds(923, 50, 50, 20);
+		getContentPane().add(spinnerNumberOfAlg);
+
+		txtNumberOfAlgorithm = new JTextField();
+		txtNumberOfAlgorithm.setText("Number of Algorithm Iterations");
+		txtNumberOfAlgorithm.setOpaque(false);
+		txtNumberOfAlgorithm.setHorizontalAlignment(SwingConstants.TRAILING);
+		txtNumberOfAlgorithm.setFocusable(false);
+		txtNumberOfAlgorithm.setEditable(false);
+		txtNumberOfAlgorithm.setColumns(10);
+		txtNumberOfAlgorithm.setBorder(null);
+		txtNumberOfAlgorithm.setBounds(760, 50, 153, 20);
+		getContentPane().add(txtNumberOfAlgorithm);
+		
+		JButton btnLaunchMultipleLearning = new JButton("Launch Multiple Learning Algorithm");
+		btnLaunchMultipleLearning.setBounds(509, 159, 423, 23);
+		btnLaunchMultipleLearning.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			
+				btnLaunchMultipleLearning.setEnabled(false);
+
+				massLearningAlg((simpleBox.getSelectedIndex() == 1), rdbtnAdaptableLearningRate.isSelected(),
+						rdbtnPreprocessing.isSelected(), !rdbtnIncrementEveryTime.isSelected(),
+						(double) spinnerLR.getValue(), (double) spinnerDecreaseLR.getValue(),
+						(double) spinnerIncreaseLR.getValue(), (double) spinnerMomentumFact.getValue(),
+						(double) spinnerLearningProp.getValue(), (int) spinnerNumberOfSamples.getValue(),
+						(int) spinnerEpochSize.getValue(), (int) spinnerRefreshRate.getValue(),(int) spinnerNumberOfAlg.getValue());
+
+			}
+		});
+		getContentPane().add(btnLaunchMultipleLearning);
+		
+		iterationTxt = new JTextField();
+		iterationTxt.setText("0");
+		iterationTxt.setOpaque(false);
+		iterationTxt.setHorizontalAlignment(SwingConstants.TRAILING);
+		iterationTxt.setFocusable(false);
+		iterationTxt.setEditable(false);
+		iterationTxt.setColumns(10);
+		iterationTxt.setBorder(null);
+		iterationTxt.setBounds(942, 160, 31, 20);
+		getContentPane().add(iterationTxt);
+		
 		// contentPane.setBackground(Color.ORANGE);
 		// setContentPane(contentPane);
 		setVisible(true);
