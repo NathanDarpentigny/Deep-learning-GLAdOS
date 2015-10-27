@@ -185,7 +185,10 @@ public class LearningWindow extends ApplicationFrame {
 					currentPermutation = getRandomPermutation(learningSize);
 					rawNumber = 0;
 				}
-
+				if(rawNumber == cleanInput.size()-1){
+					rawNumber = 0;
+					currentPermutation = getRandomPermutation(learningSize);
+				}
 				refreshCounter++;
 				epochCounter++;
 				rawNumber++;
