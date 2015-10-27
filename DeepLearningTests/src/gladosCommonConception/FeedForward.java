@@ -42,7 +42,7 @@ public class FeedForward extends NeuralNetwork {
 		for (int j = 0; j < structure[structure.length - 1]; j++) {
 			outputLayer.add(new OutputNeuron(structure[structure.length - 2]));
 		}
-		linkNetwork();
+		linkNetwork(learningRate);
 	}
 	
 	
@@ -81,23 +81,23 @@ public class FeedForward extends NeuralNetwork {
 	}
 
 	
-	public void linkNetwork() {
+	public void linkNetwork(double defLR) {
 		// TODO Auto-generated method stub
 		for(AbstractNeuron n : inputLayer){
 			if(intermediateLayers.size()>0){
-				((InputNeuron) n).outLinkToLayer(intermediateLayers.get(0),inputLayer.size());
+				((InputNeuron) n).outLinkToLayer(intermediateLayers.get(0),inputLayer.size(),defLR);
 			}
 			else{
-				((InputNeuron) n).outLinkToLayer(outputLayer,inputLayer.size());
+				((InputNeuron) n).outLinkToLayer(outputLayer,inputLayer.size(), defLR);
 			}
 		}
 		for (AbstractNeuron n : intermediateLayers.get(intermediateLayers.size() - 1)) {
-			((IntermediateNeuron) n).outLinkToLayer(outputLayer,intermediateLayers.get(intermediateLayers.size() - 1).size());
+			((IntermediateNeuron) n).outLinkToLayer(outputLayer,intermediateLayers.get(intermediateLayers.size() - 1).size(), defLR);
 		}
 
 		for (int i = 0; i < intermediateLayers.size() - 1; i++) {
 			for (AbstractNeuron n : intermediateLayers.get(i)) {
-				((IntermediateNeuron) n).outLinkToLayer(intermediateLayers.get(i + 1),intermediateLayers.get(i).size());
+				((IntermediateNeuron) n).outLinkToLayer(intermediateLayers.get(i + 1),intermediateLayers.get(i).size(), defLR);
 			}
 		}
 	}

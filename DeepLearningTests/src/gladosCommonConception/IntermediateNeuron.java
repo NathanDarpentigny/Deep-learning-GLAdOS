@@ -33,9 +33,9 @@ public class IntermediateNeuron extends ActiveNeuron {
 		outputSynapses.add(syn);
 	}
 	
-	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize){
+	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize,double defLR){
 		for(AbstractNeuron n : layer){
-			new Synapse(this, n, (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2))/inSize);
+			new Synapse(this, n, (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2))/inSize,defLR);
 		}
 	}
 

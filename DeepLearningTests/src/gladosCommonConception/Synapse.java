@@ -1,15 +1,23 @@
 package gladosCommonConception;
 
-public class Synapse {
+import java.io.Serializable;
+
+public class Synapse implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4883554879579494943L;
 	private AbstractNeuron inputNeuron;
 	private double weight;
 	private double weightDiff;
 	private AbstractNeuron outputNeuron;
+	private double synLR;
 
-	public Synapse(AbstractNeuron in, AbstractNeuron out, double w) {
+	public Synapse(AbstractNeuron in, AbstractNeuron out, double w, double defLR) {
 		weight = w;
 		weightDiff = 0.;
 		inputNeuron = in;
+		setSynLR(defLR);
 		if (in instanceof InputNeuron) {
 			((InputNeuron) in).addOutputSynapse(this);
 		} else if (in instanceof IntermediateNeuron) {
@@ -80,6 +88,14 @@ public class Synapse {
 	 */
 	public void setOutputNeuron(AbstractNeuron outputNeuron) {
 		this.outputNeuron = outputNeuron;
+	}
+
+	public double getSynLR() {
+		return synLR;
+	}
+
+	public void setSynLR(double synLR) {
+		this.synLR = synLR;
 	}
 
 }

@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * A feed forward neural network which consists of an input layer, an output
- * layer and at least one hidden layer.
+ * layer any number of hidden layers.
  * 
  * @author Laty
  *
@@ -23,5 +23,5 @@ public abstract class NeuralNetwork implements Serializable {
 	
 	public abstract void setInputs(double[] inputs);
 
-	public abstract void linkNetwork();
+	public abstract void linkNetwork(double defaultLearningRate);
 }

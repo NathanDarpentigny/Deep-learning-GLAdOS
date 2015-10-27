@@ -65,8 +65,6 @@ public class LearningWindow extends ApplicationFrame {
 	private ChartPanel mistakePanel;
 	private JTextField txtEpochSize;
 	private JTextField txtRefreshRate;
-	// private VisualPanel contentPane;
-	// private static double[] expectedResult = new double[]{0.8,0.4,0.6};
 
 	public static void main(String[] args) {
 		try {
@@ -109,7 +107,6 @@ public class LearningWindow extends ApplicationFrame {
 	 *            : the target average error for one epoch (in percentage) after
 	 *            which the learning algorithm will stop.
 	 */
-	// @SuppressWarnings("unused")
 	public void learningAlg(boolean simple, boolean variableLR, boolean preprocessing, boolean incrementPerEpoch,
 			double defaultLR, double decreaseLR_factor, double increaseLR_factor, double momentumRate,
 			double learningProportion, double targetAverageError, int epochSize, int refreshSize) {
@@ -140,9 +137,10 @@ public class LearningWindow extends ApplicationFrame {
 		int[] currentPermutation;
 		SourceImage currentImage;
 		int sampleNumber = 0;
+		Output out = new Output();
 
 		if (!simple) {
-			//int i = 0;
+			// int i = 0;
 			// int numberOfMistakesPerEpoch = 0;
 			// int numberOfTestMistakesPerEpoch = 0;
 			FeedForward learningNN;
@@ -161,7 +159,6 @@ public class LearningWindow extends ApplicationFrame {
 			int rawNumber = 0;
 			while (averageTestErrorPerEpoch > targetAverageError) {
 				int learningSize = (int) (cleanInput.size() * learningProportion);
-				// System.out.println(learningSize);
 				currentPermutation = getRandomPermutation(learningSize);
 				currentImage = cleanInput.get(currentPermutation[rawNumber]);
 
@@ -173,19 +170,18 @@ public class LearningWindow extends ApplicationFrame {
 				learnOneInput(learningNN, input, incrementPerEpoch, momentumRate, learningRate, currentImage,
 						variableLR);
 
-				if (refreshCounter == refreshSize-1) {
+				if (refreshCounter == refreshSize - 1) {
 					sampleNumber++;
 					averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
-							preprocessing, sampleNumber);
+							preprocessing, sampleNumber, refreshSize, out);
 					update(getGraphics());
 					refreshCounter = 0;
 				}
 
-				if (epochCounter == epochSize-1) {
+				if (epochCounter == epochSize - 1) {
+					if (!incrementPerEpoch) {
 
-				}
-
-				if (rawNumber == learningSize-1) {
+					}
 					currentPermutation = getRandomPermutation(learningSize);
 					rawNumber = 0;
 				}
@@ -236,10 +232,13 @@ public class LearningWindow extends ApplicationFrame {
 					FileOutputStream fileOut;
 					if (preprocessing) {
 						if (chooser.getSelectedFile().getPath().endsWith(".pre")) {
-							fileOut = new FileOutputStream("resultingNN/" + chooser.getSelectedFile().getPath());
+							fileOut = new FileOutputStream(chooser.getSelectedFile().getPath());
+							out.generateCsvFile((chooser.getSelectedFile().getPath()).substring(0,
+									(chooser.getSelectedFile().getPath()).length() - 4));
 						} else {
 							fileOut = new FileOutputStream(
-									"resultingNN/" + chooser.getSelectedFile().getPath() + ".pre");
+									chooser.getSelectedFile().getPath() + ".pre");
+							out.generateCsvFile(chooser.getSelectedFile().getPath());
 						}
 
 					} else {
@@ -250,9 +249,9 @@ public class LearningWindow extends ApplicationFrame {
 									"resultingNN/" + chooser.getSelectedFile().getPath() + ".rw");
 						}
 					}
-					ObjectOutputStream out = new ObjectOutputStream(fileOut);
-					out.writeObject(learningNN);
-					out.close();
+					ObjectOutputStream outStream = new ObjectOutputStream(fileOut);
+					outStream.writeObject(learningNN);
+					outStream.close();
 					fileOut.close();
 				}
 
@@ -307,17 +306,13 @@ public class LearningWindow extends ApplicationFrame {
 			double learningRate, SourceImage currentImage, boolean variableLR) {
 		learningNN.setInputs(input);
 		learningNN.fire();
-		// System.out.println(learningNN.getOutputs());
 		double[] expectedOutput = currentImage.getExpectedOutput();
 		backpropagateNeuronDiff(learningNN, expectedOutput);
-		// learningNN.calculateNeuronDiffs(expectedOutput);
 		backpropagateWeightDiffs(learningNN);
-		// learningNN.incrementWeightDiffs();
 		if (!incrementPerEpoch) {
 			backpropagateWeight(learningNN, learningRate);
 			resestWeightDiffs(learningNN, momentumRate);
-			// learningNN.incrementWeights();
-			// learningNN.resetWeightDiffsMomentum(momentumRate);
+
 			if (variableLR) {
 				// learningNN.varyLR(decreaseLR_factor,
 				// increaseLR_factor);
@@ -329,9 +324,8 @@ public class LearningWindow extends ApplicationFrame {
 	private void backpropagateNeuronDiff(FeedForward learningNN, double[] expectedOutput) {
 		int c = 0;
 		for (AbstractNeuron n : learningNN.getOutputLayer()) {
-			n.setNeuronDiff(
-					Sigmoid.getInstance().applyDerivative(Sigmoid.getInstance().inverse(((ActiveNeuron) n).getOutput()))
-							* (expectedOutput[c] - n.getOutput()));
+			n.setNeuronDiff(Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue())
+					* (expectedOutput[c] - n.getOutput()));
 			c++;
 		}
 		for (int i = learningNN.getIntermediateLayers().size() - 1; i >= 0; i--) {
@@ -340,8 +334,8 @@ public class LearningWindow extends ApplicationFrame {
 				for (Synapse s : ((IntermediateNeuron) n).getOutputSynapses()) {
 					temp += s.getWeight() * s.getOutputNeuron().getNeuronDiff();
 				}
-				n.setNeuronDiff(Sigmoid.getInstance()
-						.applyDerivative(Sigmoid.getInstance().inverse(((ActiveNeuron) n).getOutput())) * temp);
+				n.setNeuronDiff(
+						Sigmoid.getInstance().applyDerivative(((ActiveNeuron) n).getIntermediateValue()) * temp);
 			}
 		}
 	}
@@ -759,7 +753,7 @@ public class LearningWindow extends ApplicationFrame {
 	}
 
 	private double testLearningNN(int totalSourceSize, int learningSourceSize, List<SourceImage> cleanInput,
-			NeuralNetwork learningNN, boolean preprocessing, int epochNumber) {
+			NeuralNetwork learningNN, boolean preprocessing, int sampleNumber, int sampleSize, Output out) {
 		double[] input;
 		double averageTestMistakes = 0;
 		double averageLearningMistakes = 0;
@@ -807,10 +801,15 @@ public class LearningWindow extends ApplicationFrame {
 		// System.out.println("Test error :" +averageTestError*100 +"Learning
 		// Error : " + averageLearningError*100);
 
-		testErrorSeries.add((double) epochNumber, averageTestError * 100);
-		errorSeries.add((double) epochNumber, averageLearningError * 100);
-		testMistakeSeries.add((double) epochNumber, averageTestMistakes * 100);
-		mistakeSeries.add((double) epochNumber, averageLearningMistakes * 100);
+		out.getNumberOfExample().add((double) sampleNumber * sampleSize);
+		testErrorSeries.add((double) sampleNumber, averageTestError * 100);
+		out.getAverageQuadraticErrorTest().add(averageTestError * 100);
+		errorSeries.add((double) sampleNumber, averageLearningError * 100);
+		out.getAverageQuadraticErrorLearning().add(averageLearningError * 100);
+		testMistakeSeries.add((double) sampleNumber, averageTestMistakes * 100);
+		out.getMistakePerEpochTest().add(averageTestMistakes * 100);
+		mistakeSeries.add((double) sampleNumber, averageLearningMistakes * 100);
+		out.getMistakePerEpochLearning().add(averageLearningMistakes * 100);
 
 		return averageTestError * 100;
 	}

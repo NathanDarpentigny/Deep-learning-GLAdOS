@@ -35,9 +35,9 @@ public class InputNeuron extends AbstractNeuron {
 		input = x;
 	}
 
-	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize){
+	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize, double defLR){
 		for(AbstractNeuron n : layer){
-			new Synapse(this, n, (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2))/inSize);
+			new Synapse(this, n, (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2))/inSize, defLR);
 		}
 	}
 	
