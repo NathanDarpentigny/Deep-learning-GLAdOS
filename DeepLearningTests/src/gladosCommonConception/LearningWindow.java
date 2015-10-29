@@ -153,9 +153,11 @@ public class LearningWindow extends ApplicationFrame {
 					learnOneInput(learningNN, input, incrementPerEpoch, momentumRate, learningRate, currentImage,
 							variableLR);
 	
-					if (refreshCounter == refreshSize - 1||(sampleNumber == 0 && rawNumber == 0)) {
+					if (refreshCounter == refreshSize - 1 
+							//||(sampleNumber == 0 && rawNumber == 0)
+							) {
 						averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
-								preprocessing, sampleNumber, refreshSize, out);
+								preprocessing, sampleNumber, refreshSize, out,currentPermutation);
 						sampleNumber++;
 						update(getGraphics());
 						refreshCounter = 0;
@@ -383,9 +385,11 @@ public class LearningWindow extends ApplicationFrame {
 				learnOneInput(learningNN, input, incrementPerEpoch, momentumRate, learningRate, currentImage,
 						variableLR);
 
-				if (refreshCounter == refreshSize - 1||(sampleNumber == 0 && rawNumber == 0)) {
+				if (refreshCounter == refreshSize - 1
+//						||(sampleNumber == 0 && rawNumber == 0)
+						) {
 					averageTestErrorPerEpoch = testLearningNN(cleanInput.size(), learningSize, cleanInput, learningNN,
-							preprocessing, sampleNumber, refreshSize, out);
+							preprocessing, sampleNumber, refreshSize, out, currentPermutation);
 					sampleNumber++;
 					update(getGraphics());
 					refreshCounter = 0;
@@ -1010,7 +1014,7 @@ public class LearningWindow extends ApplicationFrame {
 	}
 
 	private double testLearningNN(int totalSourceSize, int learningSourceSize, List<SourceImage> cleanInput,
-			NeuralNetwork learningNN, boolean preprocessing, int sampleNumber, int sampleSize, Output out) {
+			NeuralNetwork learningNN, boolean preprocessing, int sampleNumber, int sampleSize, Output out, int[] currentPermutation) {
 		double[] input;
 		double averageTestMistakes = 0;
 		double averageLearningMistakes = 0;
@@ -1018,7 +1022,7 @@ public class LearningWindow extends ApplicationFrame {
 		double averageLearningError = 0;
 
 		for (int j = 0; j < learningSourceSize; j++) {
-			SourceImage currentImage = cleanInput.get(j);
+			SourceImage currentImage = cleanInput.get(currentPermutation[j]);
 			if (preprocessing) {
 				input = currentImage.getRelevantFeatures();
 			} else {
