@@ -23,7 +23,7 @@ public class FeedForward extends NeuralNetwork {
 	public FeedForward(int[] structure, double learningRate){
 		//this.learningRate = learningRate;
 		if (structure.length < 2) {
-			System.out.println("Please enter a structure with more than 2 layers");
+			System.out.println("Please enter a structure with at least an input and output layer");
 			return;
 		}
 		inputLayer = new ArrayList<AbstractNeuron>();
@@ -46,6 +46,34 @@ public class FeedForward extends NeuralNetwork {
 	}
 	
 	
+	public FeedForward(int[] structure, double learningRate, boolean deterministic) {
+		if (structure.length < 2) {
+			System.out.println("Please enter a structure with at least an input and output layer");
+			return;
+		}
+		inputLayer = new ArrayList<AbstractNeuron>();
+		for (int j = 0; j < structure[0]; j++) {
+			inputLayer.add(new InputNeuron());
+		}
+		intermediateLayers = new ArrayList<List<AbstractNeuron>>();
+		for (int i = 1; i < structure.length - 1; i++) {
+			intermediateLayers.add(new ArrayList<AbstractNeuron>());
+			for (int j = 0; j < structure[i]; j++) {
+				intermediateLayers.get(i - 1).add(new IntermediateNeuron(deterministic));
+			}
+		}
+
+		outputLayer = new ArrayList<AbstractNeuron>();
+		for (int j = 0; j < structure[structure.length - 1]; j++) {
+			outputLayer.add(new OutputNeuron(deterministic));
+		}
+		linkNetwork(learningRate,deterministic);
+	}
+
+
+	
+
+
 	public void fire() {
 		for (AbstractNeuron n : inputLayer) {
 			n.fire();
@@ -82,7 +110,6 @@ public class FeedForward extends NeuralNetwork {
 
 	
 	public void linkNetwork(double defLR) {
-		// TODO Auto-generated method stub
 		for(AbstractNeuron n : inputLayer){
 			if(intermediateLayers.size()>0){
 				((InputNeuron) n).outLinkToLayer(intermediateLayers.get(0),inputLayer.size(),defLR);
@@ -98,6 +125,26 @@ public class FeedForward extends NeuralNetwork {
 		for (int i = 0; i < intermediateLayers.size() - 1; i++) {
 			for (AbstractNeuron n : intermediateLayers.get(i)) {
 				((IntermediateNeuron) n).outLinkToLayer(intermediateLayers.get(i + 1),intermediateLayers.get(i).size(), defLR);
+			}
+		}
+	}
+	
+	public void linkNetwork(double defLR, boolean deterministic) {
+		for(AbstractNeuron n : inputLayer){
+			if(intermediateLayers.size()>0){
+				((InputNeuron) n).outLinkToLayer(intermediateLayers.get(0),inputLayer.size(),defLR,deterministic);
+			}
+			else{
+				((InputNeuron) n).outLinkToLayer(outputLayer,inputLayer.size(), defLR,deterministic);
+			}
+		}
+		for (AbstractNeuron n : intermediateLayers.get(intermediateLayers.size() - 1)) {
+			((IntermediateNeuron) n).outLinkToLayer(outputLayer,intermediateLayers.get(intermediateLayers.size() - 1).size(), defLR,deterministic);
+		}
+
+		for (int i = 0; i < intermediateLayers.size() - 1; i++) {
+			for (AbstractNeuron n : intermediateLayers.get(i)) {
+				((IntermediateNeuron) n).outLinkToLayer(intermediateLayers.get(i + 1),intermediateLayers.get(i).size(), defLR,deterministic);
 			}
 		}
 	}

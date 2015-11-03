@@ -46,4 +46,11 @@ public class InputNeuron extends AbstractNeuron {
 
 	}
 
+	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize, double defLR, boolean deterministic) {
+		for(AbstractNeuron n : layer){
+			new Synapse(this, n, 1., defLR);
+		}
+		
+	}
+
 }

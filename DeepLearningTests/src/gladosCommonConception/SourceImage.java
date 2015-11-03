@@ -64,8 +64,8 @@ public class SourceImage implements Serializable {
 	public double[] getCleanRawDoubleImage() {
 		double[] res = new double[rawImage.length];
 		for (int i = 0; i < rawImage.length; i++) {
-			res[i] = rawImage[i];
-		}
+			res[i] = rawImage[i];			
+		}	
 		return res;
 	}
 
@@ -178,6 +178,23 @@ public class SourceImage implements Serializable {
 	 * @return
 	 */
 	public double[] getRelevantFeatures() {
+		double [] res = relevantFeatures;
+		double max = relevantFeatures[0];
+		double min =  relevantFeatures[0];
+		double temp;
+		for(int i= 1 ; i<relevantFeatures.length;i++){
+			temp = relevantFeatures[i];
+			if(temp>max){
+				max = temp;
+			}
+			if(temp<min){
+				min = temp;
+			}
+		}
+		temp = (max -min)/2;
+		for(int i = 0 ; i<relevantFeatures.length ; i++){
+			res[i] = (relevantFeatures[i]-temp)/temp;
+		}
 		return relevantFeatures;
 	}
 

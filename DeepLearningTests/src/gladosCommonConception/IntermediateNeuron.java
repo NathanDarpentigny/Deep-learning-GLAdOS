@@ -24,6 +24,10 @@ public class IntermediateNeuron extends ActiveNeuron {
 		outputSynapses = new ArrayList<Synapse>();
 
 	}
+	public IntermediateNeuron(boolean determistic){
+		super(determistic);
+		outputSynapses = new ArrayList<Synapse>();
+	}
 
 	public List<Synapse> getOutputSynapses() {
 		return outputSynapses;
@@ -39,14 +43,13 @@ public class IntermediateNeuron extends ActiveNeuron {
 		}
 	}
 
-	public void resetWeightDiffs() {
-		// TODO Auto-generated method stub
+	
 
-	}
-
-	public void resetWeightDiffsMomentum(double alphaRate) {
-		// TODO Auto-generated method stub
-
+	public void outLinkToLayer(List<AbstractNeuron> layer, int inSize, double defLR, boolean deterministic) {
+		for(AbstractNeuron n : layer){
+			new Synapse(this, n, 1., defLR);
+		}
+		
 	}
 
 }

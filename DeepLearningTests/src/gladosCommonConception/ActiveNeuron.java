@@ -19,16 +19,10 @@ public abstract class ActiveNeuron extends AbstractNeuron {
 		bias = (Math.random() * 2 * WEIGHT_RANGE - (WEIGHT_RANGE / 2))/finalInputSize;
 	}
 	
-	/**
-	 * Resets the weight gradient for all weights in the neuron
-	 */
-	public abstract void resetWeightDiffs();
-
-	/**
-	 * "Resets" the weight gradient for all weights in the neuron according to
-	 * the momentum method.
-	 */
-	public abstract void resetWeightDiffsMomentum(double alphaRate);
+	public ActiveNeuron(boolean determistic){
+		inputSynapses = new ArrayList<Synapse>();
+		bias = 1.;
+	}
 
 	public void fire() {
 		double res = bias;

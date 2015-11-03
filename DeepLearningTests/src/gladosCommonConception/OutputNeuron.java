@@ -17,20 +17,9 @@ public class OutputNeuron extends ActiveNeuron {
 	public OutputNeuron(int finalInputSize) {
 		super(finalInputSize);
 	}
-
-	
-	public void resetWeightDiffs() {
-		// TODO Auto-generated method stub
-		
+	public OutputNeuron(boolean deterministic){
+		super(deterministic);
 	}
-
-	@Override
-	public void resetWeightDiffsMomentum(double alphaRate) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
 
 
 }
